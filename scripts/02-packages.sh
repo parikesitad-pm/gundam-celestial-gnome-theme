@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Gundam Celestial GNOME Theme - Module 02: Package & Dependency Management
-# Target: Manjaro Linux (Pacman + AUR/yay)
-# Dependencies: Nordzy-dark icons, Dash-to-Dock, Logo Menu, Resource Monitor
+# Project:     gundam-celestial-gnome-theme
+# Module:      02 - Package & Dependency Management (scripts/02-packages.sh)
+# Target:      Manjaro 26.1.2 (Bian-May) | GNOME Shell 50.4 (Wayland)
+# Author:      Dausan Adam Parikesit
+# License:     MIT License (c) 2026
+# Dependencies: Nordzy-dark, Dash-to-Dock, Logo Menu, Resource Monitor, Just Perfection
 # ==============================================================================
 
 set -euo pipefail
@@ -41,6 +44,9 @@ fi
 OFFICIAL_PKGS=(
     "zram-generator"
     "gnome-shell-extension-dash-to-dock"
+    "gnome-shell-extensions"
+    "ttf-jetbrains-mono"
+    "curl"
     "unzip"
     "glib2"
 )
@@ -48,8 +54,10 @@ OFFICIAL_PKGS=(
 # AUR Packages
 AUR_PKGS=(
     "nordzy-icon-theme"
+    "whitesur-gtk-theme"
     "gnome-shell-extension-logo-menu"
     "gnome-shell-extension-resource-monitor"
+    "gnome-shell-extension-just-perfection-desktop"
 )
 
 # 1. Filter and install official repository packages

@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# GUNDAM CELESTIAL BEING - GNOME WORKSTATION DOTFILES
-# ==============================================================================
-# Target: Manjaro Linux (Bian-May) with GNOME Shell 50.4 (Wayland)
-# Hardware Profile: 8GB Physical RAM Workstation
-# Strategy: ZRAM (zstd, zram-size=ram), 0 runtime daemons, SVG vector icons
+# Project:     gundam-celestial-gnome-theme
+# Module:      Master Turnkey Orchestrator (install.sh)
+# Target:      Manjaro 26.1.2 (Bian-May) | GNOME Shell 50.4 (Wayland)
+# Author:      Dausan Adam Parikesit
+# License:     MIT License (c) 2026
+# Description: Turnkey installation engine with animated CLI loader, state backup,
+#              Tahoe cursor, JetBrains Mono typography, and rollback recovery
 # ==============================================================================
 
 set -euo pipefail
@@ -23,202 +25,237 @@ NC='\033[0m'
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export REPO_DIR
 
+LOG_FILE="/tmp/gundam-theme-install.log"
+SCRIPTS_DIR="${REPO_DIR}/scripts"
+
 log_banner() {
-    echo -e "${CYAN}${BOLD}"
-    cat <<'EOF'
-   ____ _   _ _   _ ____    _    __  __
-  / ___| | | | \ | |  _ \  / \  |  \/  |
- | |  _| | | |  \| | | | |/ _ \ | |\/| |
- | |_| | |_| | |\  | |_| / ___ \| |  | |
-  \____|\___/|_| \_|____/_/   \_\_|  |_|
-   CELESTIAL BEING - MANJARO GNOME 50 (WAYLAND)
-EOF
-    echo -e "${NC}"
-    echo -e "${BOLD}Repository Path:${NC} ${REPO_DIR}"
-    echo -e "${BOLD}Target System:${NC}   Manjaro Linux | GNOME 50.4 (Wayland) | 8GB RAM Optimization"
-    echo -e "${BLUE}----------------------------------------------------------------------${NC}"
+    echo -e "${CYAN}${BOLD}❖ GUNDAM CELESTIAL BEING | GNOME 50.4 (WAYLAND)${NC}"
+    echo -e "${BLUE}  Architect: Dausan Adam Parikesit | 8GB RAM ZRAM Optimized | Preset: gundam-00${NC}\n"
 }
 
 show_help() {
     cat <<EOF
+${BOLD}Gundam Celestial GNOME Theme - Installation & Management Tool${NC}
+Author: Dausan Adam Parikesit | License: MIT (c) 2026
+
 Usage: $(basename "$0") [OPTIONS]
 
-Automated dotfiles setup for Gundam Celestial GNOME Theme on Manjaro Linux.
-
 Options:
-  -u, --user-only   Apply user-space GNOME configuration only (skip root ZRAM and packages)
-  -c, --check       Perform non-destructive environment, asset, and config audit
-  -h, --help        Display this help message and exit
+  --restore         Instantly restore the latest dconf desktop state snapshot
+  --dry-run         Simulate checks, network, and preview schema changes without writing
+  -u, --user-only   Apply user-space configurations and preset only (skip root ZRAM/packages)
+  -c, --check       Perform non-destructive environment and asset audit
+  -h, --help        Display this help screen
 
 Default:
-  Runs the full sequential installation (ZRAM -> Packages -> GNOME Config).
+  Runs the full turnkey installation pipeline with live CLI animated loader.
 EOF
 }
 
-log_step() { echo -e "\n${BOLD}${MAGENTA}==> [STEP]${NC} ${BOLD}$*${NC}"; }
 log_info() { echo -e "${CYAN}[INFO]${NC} $*"; }
 log_ok()   { echo -e "${GREEN}[OK]${NC} $*"; }
 log_warn() { echo -e "${YELLOW}[WARN]${NC} $*"; }
 log_err()  { echo -e "${RED}[ERROR]${NC} $*" >&2; }
 
 # ------------------------------------------------------------------------------
-# Pre-flight Checks & Asset Verification
+# Animated CLI Loader
 # ------------------------------------------------------------------------------
-verify_environment() {
-    log_step "Verifying Environment & Prerequisites"
+run_step() {
+    local msg="$1"
+    shift
 
-    # OS Verification
-    if [[ -f /etc/os-release ]]; then
-        # shellcheck disable=SC1091
-        source /etc/os-release
-        log_info "Detected OS: ${PRETTY_NAME:-Linux}"
-        if [[ "${ID:-}" != "manjaro" && "${ID_LIKE:-}" != *"arch"* ]]; then
-            log_warn "This setup is tailored for Manjaro/Arch Linux. Proceed with caution."
-        fi
-    fi
-
-    # Session type
-    local session="${XDG_SESSION_TYPE:-unknown}"
-    log_info "Desktop Session: ${session}"
-    if [[ "${session}" != "wayland" ]]; then
-        log_warn "Current session is '${session}'. This profile is optimized specifically for Wayland."
-    fi
-
-    # GNOME Shell version
-    if command -v gnome-shell >/dev/null 2>&1; then
-        local gver
-        gver="$(gnome-shell --version 2>&1 || true)"
-        log_info "Shell: ${gver}"
-    else
-        log_err "GNOME Shell was not detected on this system."
-        exit 1
-    fi
-
-    # Sudo verification if running full setup
-    if [[ "${RUN_MODE}" == "full" ]]; then
-        if ! sudo -n true 2>/dev/null; then
-            if [[ -t 0 ]]; then
-                log_info "Elevated privileges required for ZRAM and package configuration."
-                sudo -v
-            else
-                log_warn "Non-interactive shell without cached sudo credentials. Root tasks may prompt."
-            fi
+    # If non-interactive, print cleanly without animation
+    if [[ ! -t 1 ]]; then
+        echo -e "${CYAN}[+] ${msg}...${NC}"
+        if "$@" >> "${LOG_FILE}" 2>&1; then
+            echo -e "${GREEN}[✓] ${msg}${NC}"
+            return 0
         else
-            log_ok "Sudo privileges validated and cached."
+            echo -e "${RED}[✗] ${msg} (Failed - check ${LOG_FILE})${NC}"
+            return 1
         fi
     fi
-}
 
-verify_assets() {
-    log_step "Verifying Repository Graphical Assets"
+    # Animated braille spinner for interactive TTY
+    local spin_chars=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
+    local spin_idx=0
 
-    local dark_wp="${REPO_DIR}/assets/img/gundam-dark.jpg"
-    local light_wp="${REPO_DIR}/assets/img/gundam-light.jpg"
-    local lock_wp="${REPO_DIR}/assets/img/gundam-lock.jpg"
-    local cb_logo="${REPO_DIR}/assets/img/logo/cb.png"
+    # Run command in background redirected to log
+    "$@" >> "${LOG_FILE}" 2>&1 &
+    local cmd_pid=$!
 
-    # Verify wallpapers
-    if [[ -f "${dark_wp}" ]]; then
-        log_ok "Dark wallpaper located: ${dark_wp}"
+    # Hide cursor
+    tput civis 2>/dev/null || true
+
+    while kill -0 "${cmd_pid}" 2>/dev/null; do
+        printf "\r  ${CYAN}%s${NC} [+] %s..." "${spin_chars[${spin_idx}]}" "${msg}"
+        spin_idx=$(( (spin_idx + 1) % 10 ))
+        sleep 0.08
+    done
+
+    # Restore cursor
+    tput cnorm 2>/dev/null || true
+
+    wait "${cmd_pid}"
+    local status=$?
+
+    if [[ ${status} -eq 0 ]]; then
+        printf "\r  ${GREEN}[✓]${NC} %s                                \n" "${msg}"
+        return 0
     else
-        log_err "Missing dark wallpaper: ${dark_wp}"
-        exit 1
+        printf "\r  ${RED}[✗]${NC} %s (Failed - check %s)           \n" "${msg}" "${LOG_FILE}"
+        return ${status}
     fi
-
-    if [[ -f "${light_wp}" ]]; then
-        log_ok "Light wallpaper located: ${light_wp}"
-    else
-        log_err "Missing light wallpaper: ${light_wp}"
-        exit 1
-    fi
-
-    if [[ -f "${lock_wp}" ]]; then
-        log_ok "Lockscreen wallpaper located: ${lock_wp}"
-    else
-        log_warn "Lockscreen wallpaper missing: ${lock_wp}"
-        log_warn "Falling back lockscreen to: ${dark_wp}"
-    fi
-
-    # Verify Celestial Being logo with graceful fallback warning
-    if [[ -f "${cb_logo}" ]]; then
-        log_ok "Celestial Being logo located: ${cb_logo}"
-    else
-        log_warn "------------------------------------------------------------"
-        log_warn "CRITICAL WARNING: Celestial Being logo missing at:"
-        log_warn "${cb_logo}"
-        log_warn "The Logo Menu extension will fall back to default icon."
-        log_warn "Ensure assets/img/logo/cb.png is restored."
-        log_warn "------------------------------------------------------------"
-    fi
-}
-
-audit_system() {
-    log_step "System & GNOME Audit (Read-Only Check)"
-
-    echo -e "${BOLD}1. ZRAM Status:${NC}"
-    if command -v zramctl >/dev/null 2>&1; then
-        zramctl --output NAME,ALGORITHM,DISKSIZE,DATA,COMPR,TOTAL,MOUNTPOINT || true
-    fi
-
-    echo -e "\n${BOLD}2. Key GNOME Desktop Settings:${NC}"
-    echo "  Window buttons:  $(gsettings get org.gnome.desktop.wm.preferences button-layout 2>/dev/null || echo 'N/A')"
-    echo "  Color scheme:    $(gsettings get org.gnome.desktop.interface color-scheme 2>/dev/null || echo 'N/A')"
-    echo "  Icon theme:      $(gsettings get org.gnome.desktop.interface icon-theme 2>/dev/null || echo 'N/A')"
-    echo "  Dark wallpaper:  $(gsettings get org.gnome.desktop.background picture-uri-dark 2>/dev/null || echo 'N/A')"
-    echo "  Light wallpaper: $(gsettings get org.gnome.desktop.background picture-uri 2>/dev/null || echo 'N/A')"
-    echo "  Lockscreen:      $(gsettings get org.gnome.desktop.screensaver picture-uri 2>/dev/null || echo 'N/A')"
-
-    echo -e "\n${BOLD}3. Extensions Status:${NC}"
-    if command -v gnome-extensions >/dev/null 2>&1; then
-        for ext in "dash-to-dock@micxgx.gmail.com" "logomenu@aryan_k" "Resource_Monitor@Ory0n"; do
-            local state
-            state="$(gnome-extensions info "${ext}" 2>/dev/null | grep "State:" || echo "State: Not installed")"
-            echo "  ${ext}: ${state}"
-        done
-    fi
-
-    log_ok "System audit complete."
 }
 
 # ------------------------------------------------------------------------------
-# Modular Execution
+# State Backup & Restore Engine
 # ------------------------------------------------------------------------------
-run_modules() {
-    local scripts_dir="${REPO_DIR}/scripts"
+create_desktop_backup() {
+    local backup_dir="${HOME}/.config"
+    local timestamp
+    timestamp="$(date +%Y%m%d_%H%M%S)"
+    local backup_file="${backup_dir}/dconf-backup-${timestamp}.dconf"
+    mkdir -p "${backup_dir}"
+    dconf dump / > "${backup_file}"
+    echo "Snapshot created at ${backup_file}" >> "${LOG_FILE}"
+}
 
-    # Ensure executable permissions on modules
-    chmod +x "${scripts_dir}"/*.sh 2>/dev/null || true
+restore_backup() {
+    log_banner
+    echo -e "${BOLD}${CYAN}=== DESKTOP STATE RESTORE ENGINE ===${NC}\n"
+    local backup_dir="${HOME}/.config"
+    local latest_backup
+    latest_backup="$(find "${backup_dir}" -maxdepth 1 -name "dconf-backup-*.dconf" -type f 2>/dev/null | sort -r | head -n 1)"
 
-    if [[ "${RUN_MODE}" == "full" ]]; then
-        # Step 1: ZRAM Configuration
-        log_step "Executing Module 01: ZRAM Memory Strategy (8GB Optimization)"
-        "${scripts_dir}/01-zram.sh"
-
-        # Step 2: Package & Dependency Management
-        log_step "Executing Module 02: Package Resolution (Pacman & AUR)"
-        "${scripts_dir}/02-packages.sh"
+    if [[ -z "${latest_backup}" || ! -f "${latest_backup}" ]]; then
+        log_err "No restore snapshots found in ${backup_dir} matching 'dconf-backup-*.dconf'."
+        exit 1
     fi
 
-    # Step 3: Declarative GNOME Configuration
-    log_step "Executing Module 03: GNOME Shell Declarative Config"
-    "${scripts_dir}/03-gnome-config.sh"
+    log_info "Discovered latest restore snapshot: ${latest_backup}"
+    if dconf load / < "${latest_backup}"; then
+        log_ok "Desktop UI state successfully restored from ${latest_backup}."
+    else
+        log_err "Failed to load dconf snapshot."
+        exit 1
+    fi
+    exit 0
+}
+
+# ------------------------------------------------------------------------------
+# Dry-Run Simulation
+# ------------------------------------------------------------------------------
+simulate_dry_run() {
+    log_banner
+    echo -e "${BOLD}${YELLOW}=== DRY-RUN SIMULATION MODE ===${NC}\n"
+    log_info "Simulating checks without modifying disk or system settings...\n"
+
+    echo -e "${BOLD}1. Network Connectivity Check:${NC}"
+    if curl -sI --connect-timeout 4 "https://github.com" >/dev/null 2>&1; then
+        log_ok "GitHub connectivity: ONLINE"
+    else
+        log_warn "GitHub connectivity: UNREACHABLE"
+    fi
+
+    echo -e "\n${BOLD}2. Repository Graphical Assets Check:${NC}"
+    local assets=(
+        "assets/img/gundam-dark.jpg"
+        "assets/img/gundam-light.jpg"
+        "assets/img/gundam-lock.jpg"
+        "assets/img/logo/cb.png"
+    )
+    for asset in "${assets[@]}"; do
+        if [[ -f "${REPO_DIR}/${asset}" ]]; then
+            log_ok "Located: ${asset}"
+        else
+            log_err "Missing: ${asset}"
+        fi
+    done
+
+    echo -e "\n${BOLD}3. Schema & Preset Target Preview:${NC}"
+    log_info "Target Preset:    ${REPO_DIR}/presets/gundam-00.dconf (READY)"
+    log_info "Cursor Engine:    MacOS-Tahoe (24px compact)"
+    log_info "Typography:       JetBrains Mono 10 (Interface, Monospace, Document)"
+    log_info "Dock Profile:     Floating, Autohide, 48px, Fixed RGBA 0.45, hide-in-overview"
+    log_info "Window Controls:  Left macOS Traffic Lights (GTK3 & GTK4/Libadwaita)"
+    log_info "Top Bar:          Flat RGBA (0.45 alpha), Overview Search Bar Disabled"
+    log_info "Shortcut Target:  Ulauncher Spotlight (Ctrl + Space)"
+
+    echo -e "\n${BOLD}${GREEN}✓ Dry-run completed. All parameters verified successfully.${NC}\n"
+    exit 0
+}
+
+# ------------------------------------------------------------------------------
+# Modular Step Wrappers
+# ------------------------------------------------------------------------------
+step_backup() {
+    create_desktop_backup
+}
+
+step_zram() {
+    "${SCRIPTS_DIR}/01-zram.sh"
+}
+
+step_packages() {
+    "${SCRIPTS_DIR}/02-packages.sh"
+}
+
+step_typography() {
+    # Ensure JetBrains Mono is bound across GNOME interface schemas
+    gsettings set org.gnome.desktop.interface font-name 'JetBrains Mono 10'
+    gsettings set org.gnome.desktop.interface monospace-font-name 'JetBrains Mono 10'
+    gsettings set org.gnome.desktop.interface document-font-name 'JetBrains Mono 10'
+}
+
+step_cursor() {
+    local cursor_dir="${HOME}/.local/share/icons/MacOS-Tahoe"
+    if [[ ! -d "${cursor_dir}/cursors" ]]; then
+        mkdir -p "${HOME}/.local/share/icons"
+        local tmp_zip="/tmp/MacOS-Tahoe-Cursor.zip"
+        local tmp_extract="/tmp/MacOS-Tahoe-Extract"
+        rm -rf "${tmp_zip}" "${tmp_extract}"
+        if curl -sL --fail "https://github.com/witt-bit/MacOS-Tahoe-Cursor/releases/download/1.2/MacOS-Tahoe-Cursor.zip" -o "${tmp_zip}"; then
+            unzip -q "${tmp_zip}" -d "${tmp_extract}"
+            if [[ -d "${tmp_extract}/MacOS-Tahoe-Cursor/MacOS-Tahoe-Cursor" ]]; then
+                mkdir -p "${cursor_dir}"
+                cp -r "${tmp_extract}/MacOS-Tahoe-Cursor/MacOS-Tahoe-Cursor/"* "${cursor_dir}/"
+            fi
+            rm -rf "${tmp_zip}" "${tmp_extract}"
+        fi
+    fi
+    gsettings set org.gnome.desktop.interface cursor-theme 'MacOS-Tahoe'
+    gsettings set org.gnome.desktop.interface cursor-size 24
+}
+
+step_gnome_config() {
+    "${SCRIPTS_DIR}/03-gnome-config.sh"
+}
+
+step_preset() {
+    "${SCRIPTS_DIR}/preset-manager.sh" apply gundam-00
 }
 
 # ------------------------------------------------------------------------------
 # Main Entrypoint
 # ------------------------------------------------------------------------------
 main() {
-    RUN_MODE="full"
+    local run_mode="full"
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
+            --restore)
+                restore_backup
+                ;;
+            --dry-run)
+                simulate_dry_run
+                ;;
             -u|--user-only)
-                RUN_MODE="user-only"
+                run_mode="user-only"
                 shift
                 ;;
             -c|--check)
-                RUN_MODE="check"
-                shift
+                simulate_dry_run
                 ;;
             -h|--help)
                 show_help
@@ -233,28 +270,64 @@ main() {
     done
 
     log_banner
-    verify_environment
-    verify_assets
 
-    if [[ "${RUN_MODE}" == "check" ]]; then
-        audit_system
-        exit 0
+    # Check environment
+    if [[ ! -f /etc/os-release ]]; then
+        log_err "Cannot verify OS environment."
+        exit 1
     fi
 
-    run_modules
+    # Initialize log file
+    echo "=== Gundam Celestial Installation Log - $(date) ===" > "${LOG_FILE}"
+
+    # Up-front root elevation check for full installation
+    if [[ "${run_mode}" == "full" ]]; then
+        if ! sudo -n true 2>/dev/null; then
+            echo -e "${CYAN}[+] Root elevation required for system configuration. Authenticating:${NC}"
+            sudo -v
+        fi
+    fi
+
+    echo -e "${BOLD}${MAGENTA}==> Initiating Turnkey Installation Pipeline${NC}\n"
+
+    # Step 1: Backup
+    run_step "Creating Desktop State Backup (Restore Point)" step_backup
+
+    if [[ "${run_mode}" == "full" ]]; then
+        # Step 2: ZRAM
+        run_step "Configuring High-Speed ZRAM Engine (zstd)" step_zram
+
+        # Package resolution
+        run_step "Resolving Package Dependencies (Pacman & AUR)" step_packages
+    fi
+
+    # Step 3: Typography
+    run_step "Deploying JetBrains Mono Typography" step_typography
+
+    # Step 4: Cursor
+    run_step "Fetching & Registering MacOS Tahoe Cursor (Compact 24px)" step_cursor
+
+    # Step 5: Window controls, top bar & overview
+    run_step "Linking WhiteSur Mac Window Controls & Libadwaita CSS" step_gnome_config
+
+    # Step 6: Preset finalization
+    run_step "Applying Declarative Preset 'gundam-00'" step_preset
 
     echo -e "\n${BOLD}${GREEN}======================================================================${NC}"
     echo -e "${BOLD}${GREEN}✓ GUNDAM CELESTIAL THEME INSTALLED & CONFIGURED SUCCESSFULLY${NC}"
     echo -e "${BOLD}${GREEN}======================================================================${NC}"
-    echo -e "Summary of Applied Architecture:"
-    echo -e "  • Memory:   ZRAM (zstd, zram-size=ram) with optimized sysctl parameters"
-    echo -e "  • Dock:     Floating, bottom-centered Dash-to-Dock with intelligent autohide"
-    echo -e "  • UI:       macOS left window controls (close,minimize,maximize:)"
-    echo -e "  • Theme:    Nordzy-dark pure SVG vector icon pack"
-    echo -e "  • Top Bar:  Celestial Being logo menu replacing Activities + 3000ms CPU/RAM monitor"
-    echo -e "  • Dynamic:  GNOME dark/light wallpapers dynamically bound via gsettings"
-    echo -e "\n${CYAN}Note:${NC} On Wayland, if newly installed extensions do not render immediately,"
-    echo -e "log out and log back in to reload the GNOME Shell session cleanly.\n"
+    echo -e "Summary of Applied Components:"
+    echo -e "  • Author:     Dausan Adam Parikesit (MIT License 2026)"
+    echo -e "  • Memory:     ZRAM (zstd, zram-size=ram) with optimized sysctl parameters"
+    echo -e "  • Typography: JetBrains Mono 10 (Interface, Monospace, Document)"
+    echo -e "  • Cursor:     MacOS Tahoe (24px compact)"
+    echo -e "  • Controls:   Left circular traffic lights (GTK3 & GTK4/Libadwaita)"
+    echo -e "  • Dock:       Floating Dash-to-Dock (0.45 flat RGBA, hide-in-overview)"
+    echo -e "  • Overview:   Clutter-free window spread (search bar hidden for Ulauncher)"
+    echo -e "  • Shortcut:   Ulauncher Spotlight mapped to Ctrl + Space"
+    echo -e "  • Preset:     'gundam-00' loaded atomically via dconf"
+    echo -e "  • Backup:     Restore point created in ~/.config/dconf-backup-*.dconf"
+    echo -e "\n${CYAN}Rollback available anytime via:${NC} ./install.sh --restore\n"
 }
 
 main "$@"

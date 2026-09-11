@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Gundam Celestial GNOME Theme - Module 01: ZRAM Memory Strategy
-# Target: Manjaro Linux (GNOME on Wayland, 8GB RAM Workstation)
-# Philosophy: High performance, zero runtime daemons, zstd RAM compression
+# Project:     gundam-celestial-gnome-theme
+# Module:      01 - ZRAM Memory Strategy (scripts/01-zram.sh)
+# Target:      Manjaro 26.1.2 (Bian-May) | GNOME Shell 50.4 (Wayland)
+# Author:      Dausan Adam Parikesit
+# License:     MIT License (c) 2026
+# Description: Configures zram-generator (zstd, zram-size=ram) & sysctl memory tuning
 # ==============================================================================
 
 set -euo pipefail

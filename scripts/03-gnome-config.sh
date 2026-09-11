@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Gundam Celestial GNOME Theme - Module 03: GNOME Shell & UI Configuration
-# Target: GNOME 50.4 on Wayland
+# Project:     gundam-celestial-gnome-theme
+# Module:      03 - GNOME Shell & UI Configuration (scripts/03-gnome-config.sh)
+# Target:      Manjaro 26.1.2 (Bian-May) | GNOME Shell 50.4 (Wayland)
+# Author:      Dausan Adam Parikesit
+# License:     MIT License (c) 2026
 # Declarative gsettings: macOS window controls, dynamic wallpapers, Nordzy icons,
-# floating autohide dock, Celestial Being Logo Menu, lean CPU/RAM Resource Monitor
+# floating autohide dock (hide-in-overview), Celestial Being Logo Menu, lean CPU/RAM
 # ==============================================================================
 
 set -euo pipefail
@@ -95,12 +98,43 @@ else
 fi
 
 # ------------------------------------------------------------------------------
-# 2. Icons & Dock (Dash to Dock)
+# 2. Typography & Cursors (JetBrains Mono & MacOS Tahoe)
+# ------------------------------------------------------------------------------
+log_info "Applying JetBrains Mono Typography..."
+set_gsetting "org.gnome.desktop.interface" "font-name" "'JetBrains Mono 10'"
+set_gsetting "org.gnome.desktop.interface" "monospace-font-name" "'JetBrains Mono 10'"
+set_gsetting "org.gnome.desktop.interface" "document-font-name" "'JetBrains Mono 10'"
+
+log_info "Fetching & Registering MacOS Tahoe Cursor (24px)..."
+CURSOR_DIR="${HOME}/.local/share/icons/MacOS-Tahoe"
+if [[ ! -d "${CURSOR_DIR}/cursors" ]]; then
+    mkdir -p "${HOME}/.local/share/icons"
+    TMP_ZIP="/tmp/MacOS-Tahoe-Cursor.zip"
+    TMP_EXTRACT="/tmp/MacOS-Tahoe-Extract"
+    rm -rf "${TMP_ZIP}" "${TMP_EXTRACT}"
+    if curl -sL --fail "https://github.com/witt-bit/MacOS-Tahoe-Cursor/releases/download/1.2/MacOS-Tahoe-Cursor.zip" -o "${TMP_ZIP}"; then
+        unzip -q "${TMP_ZIP}" -d "${TMP_EXTRACT}"
+        if [[ -d "${TMP_EXTRACT}/MacOS-Tahoe-Cursor/MacOS-Tahoe-Cursor" ]]; then
+            mkdir -p "${CURSOR_DIR}"
+            cp -r "${TMP_EXTRACT}/MacOS-Tahoe-Cursor/MacOS-Tahoe-Cursor/"* "${CURSOR_DIR}/"
+            log_ok "MacOS Tahoe cursor deployed to ${CURSOR_DIR}."
+        fi
+        rm -rf "${TMP_ZIP}" "${TMP_EXTRACT}"
+    else
+        log_warn "Failed to download MacOS Tahoe cursor zip. Fallback to system cursor."
+    fi
+fi
+set_gsetting "org.gnome.desktop.interface" "cursor-theme" "'MacOS-Tahoe'"
+set_gsetting "org.gnome.desktop.interface" "cursor-size" "24"
+
+# ------------------------------------------------------------------------------
+# 3. Icons & Dock (Dash to Dock)
 # ------------------------------------------------------------------------------
 log_info "Configuring Icon Theme & Dash to Dock..."
 
-# Icon Theme: Nordzy-dark (pure SVG vector, 0MB RAM footprint)
+# Icon & GTK Themes: Nordzy-dark (SVG vector) & WhiteSur-Dark (macOS aesthetics)
 set_gsetting "org.gnome.desktop.interface" "icon-theme" "'Nordzy-dark'"
+set_gsetting "org.gnome.desktop.interface" "gtk-theme" "'WhiteSur-Dark'"
 
 # Dock (Dash to Dock): Bottom-centered, floating, autohide, 48px icons, isolate workspaces
 set_gsetting "org.gnome.shell.extensions.dash-to-dock" "dock-position" "'BOTTOM'"
@@ -110,6 +144,15 @@ set_gsetting "org.gnome.shell.extensions.dash-to-dock" "autohide" "true"
 set_gsetting "org.gnome.shell.extensions.dash-to-dock" "intellihide" "true"
 set_gsetting "org.gnome.shell.extensions.dash-to-dock" "dash-max-icon-size" "48"
 set_gsetting "org.gnome.shell.extensions.dash-to-dock" "isolate-workspaces" "true"
+
+# Flat RGBA transparency (Zero-Blur Policy - 0% compute/Gaussian blur overhead)
+set_gsetting "org.gnome.shell.extensions.dash-to-dock" "transparency-mode" "'FIXED'"
+set_gsetting "org.gnome.shell.extensions.dash-to-dock" "background-opacity" "0.45"
+set_gsetting "org.gnome.shell.extensions.dash-to-dock" "custom-background-color" "false"
+
+# Dock collision fix: hide dock completely in GNOME Shell overview (Super key)
+dconf write /org/gnome/shell/extensions/dash-to-dock/hide-in-overview true
+log_ok "org.gnome.shell.extensions.dash-to-dock -> hide-in-overview = true"
 
 # ------------------------------------------------------------------------------
 # 3. Top Bar & Logo Menu Optimization
@@ -158,11 +201,212 @@ set_gsetting "org.gnome.shell.extensions.resource-monitor" "netethstatus" "false
 set_gsetting "org.gnome.shell.extensions.resource-monitor" "netwlanstatus" "false"
 
 # ------------------------------------------------------------------------------
-# 5. Enable Extensions
+# 4. macOS Traffic Lights Theming (GTK3 & GTK4/Libadwaita)
+# ------------------------------------------------------------------------------
+log_info "Configuring macOS Traffic Lights Theming (GTK3 & GTK4/Libadwaita)..."
+
+GTK4_CONFIG_DIR="${HOME}/.config/gtk-4.0"
+GTK3_CONFIG_DIR="${HOME}/.config/gtk-3.0"
+mkdir -p "${GTK4_CONFIG_DIR}" "${GTK3_CONFIG_DIR}"
+
+# Check for installed WhiteSur-Dark theme assets
+WHITESUR_PATH=""
+if [[ -d "/usr/share/themes/WhiteSur-Dark/gtk-4.0" ]]; then
+    WHITESUR_PATH="/usr/share/themes/WhiteSur-Dark/gtk-4.0"
+elif [[ -d "${HOME}/.themes/WhiteSur-Dark/gtk-4.0" ]]; then
+    WHITESUR_PATH="${HOME}/.themes/WhiteSur-Dark/gtk-4.0"
+fi
+
+if [[ -n "${WHITESUR_PATH}" ]]; then
+    log_info "Found WhiteSur theme assets at: ${WHITESUR_PATH}"
+    # Symlink assets directories if not already linked
+    for asset_dir in assets windows-assets; do
+        if [[ -d "${WHITESUR_PATH}/${asset_dir}" && ! -e "${GTK4_CONFIG_DIR}/${asset_dir}" ]]; then
+            ln -sf "${WHITESUR_PATH}/${asset_dir}" "${GTK4_CONFIG_DIR}/${asset_dir}"
+        fi
+    done
+fi
+
+# Generate standalone authentic macOS Traffic Lights CSS (red, yellow, green circular buttons)
+TRAFFIC_LIGHTS_CSS=$(cat <<'EOF'
+/* ==========================================================================
+   Gundam Celestial - macOS Window Controls (Traffic Lights)
+   System-Wide Support for GTK4, Libadwaita, and GTK3
+   ========================================================================== */
+windowcontrols {
+    padding: 0 4px;
+}
+
+windowcontrols button,
+headerbar windowcontrols button {
+    min-width: 13px !important;
+    min-height: 13px !important;
+    max-width: 13px !important;
+    max-height: 13px !important;
+    padding: 0 !important;
+    margin: 0 4px !important;
+    border-radius: 9999px !important;
+    border: 1px solid rgba(0, 0, 0, 0.35) !important;
+    background-size: 7px 7px !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    color: transparent !important;
+    box-shadow: none !important;
+    -gtk-icon-size: 0px !important;
+    transition: all 120ms ease;
+}
+
+/* Red (Close) */
+windowcontrols button.close,
+headerbar windowcontrols button.close {
+    background-color: #ff5f56 !important;
+    border-color: #e0443e !important;
+}
+
+windowcontrols button.close:hover,
+headerbar windowcontrols button.close:hover {
+    background-color: #ff3b30 !important;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7"><path fill="none" stroke="%234c0000" stroke-width="1.2" stroke-linecap="round" d="M1 1l5 5M6 1L1 6"/></svg>') !important;
+}
+
+/* Yellow (Minimize) */
+windowcontrols button.minimize,
+headerbar windowcontrols button.minimize {
+    background-color: #ffbd2e !important;
+    border-color: #dea123 !important;
+}
+
+windowcontrols button.minimize:hover,
+headerbar windowcontrols button.minimize:hover {
+    background-color: #ff9500 !important;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7"><path fill="none" stroke="%235a3900" stroke-width="1.2" stroke-linecap="round" d="M0.5 3.5h6"/></svg>') !important;
+}
+
+/* Green (Maximize) */
+windowcontrols button.maximize,
+headerbar windowcontrols button.maximize {
+    background-color: #27c93f !important;
+    border-color: #1aab29 !important;
+}
+
+windowcontrols button.maximize:hover,
+headerbar windowcontrols button.maximize:hover {
+    background-color: #34c759 !important;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7"><path fill="none" stroke="%230b4200" stroke-width="1.1" stroke-linecap="round" d="M1 2.5l2.5-2 2.5 2M1 4.5l2.5 2 2.5-2"/></svg>') !important;
+}
+
+/* Inactive Window / Backdrop State */
+windowcontrols button:backdrop,
+headerbar windowcontrols button:backdrop {
+    background-color: rgba(255, 255, 255, 0.18) !important;
+    border-color: rgba(0, 0, 0, 0.25) !important;
+    background-image: none !important;
+    opacity: 0.65 !important;
+}
+EOF
+)
+
+# Inject into GTK4/Libadwaita configurations
+echo "${TRAFFIC_LIGHTS_CSS}" > "${GTK4_CONFIG_DIR}/gtk.css"
+echo "${TRAFFIC_LIGHTS_CSS}" > "${GTK4_CONFIG_DIR}/gtk-dark.css"
+
+# Inject into GTK3 configuration
+echo "${TRAFFIC_LIGHTS_CSS}" > "${GTK3_CONFIG_DIR}/gtk.css"
+log_ok "macOS traffic lights CSS successfully injected into GTK4 and GTK3 configs."
+
+# ------------------------------------------------------------------------------
+# 5. Flat RGBA Top Bar & Overview Styling (Zero-Blur Policy)
+# ------------------------------------------------------------------------------
+log_info "Configuring Flat RGBA Top Bar & Overview (Zero-Blur Policy)..."
+
+# Top Bar Flat RGBA stylesheet (semi-transparent alpha without Gaussian blur compute overhead)
+TOPBAR_CSS=$(cat <<'EOF'
+/* ==========================================================================
+   Gundam Celestial - Flat RGBA Alpha Aesthetics (Zero-Blur Policy)
+   ========================================================================== */
+#panel {
+    background-color: rgba(18, 22, 28, 0.45) !important;
+    box-shadow: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    transition: background-color 200ms ease;
+}
+
+#panel.unlock-screen,
+#panel.login-screen,
+#panel:overview {
+    background-color: transparent !important;
+    border-bottom: none !important;
+}
+
+/* Clutter-Free Overview - Collapse Search Box */
+.search-entry,
+#searchEntry {
+    height: 0px !important;
+    min-height: 0px !important;
+    max-height: 0px !important;
+    padding: 0px !important;
+    margin: 0px !important;
+    border: none !important;
+    opacity: 0 !important;
+}
+EOF
+)
+
+# Deploy to User Themes directory
+USER_THEMES_DIR="${HOME}/.local/share/themes/Gundam-Celestial/gnome-shell"
+mkdir -p "${USER_THEMES_DIR}"
+echo "${TOPBAR_CSS}" > "${USER_THEMES_DIR}/gnome-shell.css"
+
+# Also deploy to ~/.config/gnome-shell/gnome-shell.css
+GNOME_SHELL_CONFIG_DIR="${HOME}/.config/gnome-shell"
+mkdir -p "${GNOME_SHELL_CONFIG_DIR}"
+echo "${TOPBAR_CSS}" > "${GNOME_SHELL_CONFIG_DIR}/gnome-shell.css"
+
+# Disable native search bar via Just Perfection extension
+set_gsetting "org.gnome.shell.extensions.just-perfection" "search" "false"
+
+# Configure user-theme extension to activate Gundam-Celestial shell stylesheet
+set_gsetting "org.gnome.shell.extensions.user-theme" "name" "'Gundam-Celestial'"
+log_ok "Flat RGBA top bar stylesheet active (Gundam-Celestial) with zero blur."
+
+# ------------------------------------------------------------------------------
+# 7. Shortcuts: Ulauncher Spotlight Integration (Ctrl + Space)
+# ------------------------------------------------------------------------------
+log_info "Configuring Ulauncher Spotlight Shortcut (Ctrl + Space)..."
+if command -v ulauncher >/dev/null 2>&1 || [[ -d "${HOME}/.config/ulauncher" ]]; then
+    mkdir -p "${HOME}/.config/ulauncher"
+    ULAUNCHER_SETTINGS="${HOME}/.config/ulauncher/settings.json"
+    if [[ -f "${ULAUNCHER_SETTINGS}" ]]; then
+        if grep -q '"hotkey-show-app"' "${ULAUNCHER_SETTINGS}"; then
+            sed -i 's/"hotkey-show-app": "[^"]*"/"hotkey-show-app": "<Primary>space"/' "${ULAUNCHER_SETTINGS}"
+        else
+            sed -i '1s/{/{\n    "hotkey-show-app": "<Primary>space",/' "${ULAUNCHER_SETTINGS}"
+        fi
+    else
+        cat <<'EOF' > "${ULAUNCHER_SETTINGS}"
+{
+    "hotkey-show-app": "<Primary>space"
+}
+EOF
+    fi
+    log_ok "Ulauncher settings.json configured with <Primary>space."
+fi
+
+# GNOME custom media keybinding for Ulauncher
+set_gsetting "org.gnome.settings-daemon.plugins.media-keys" "custom-keybindings" "['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/']"
+dconf write /org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/binding "'<Control>space'"
+dconf write /org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/command "'ulauncher-toggle'"
+dconf write /org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/name "'Ulauncher'"
+log_ok "GNOME custom shortcut mapped: Ctrl + Space -> ulauncher-toggle."
+
+# ------------------------------------------------------------------------------
+# 8. Enable Extensions
 # ------------------------------------------------------------------------------
 log_info "Enabling GNOME extensions..."
+enable_extension "user-theme@gnome-shell-extensions.gcampax.github.com"
 enable_extension "dash-to-dock@micxgx.gmail.com"
 enable_extension "logomenu@aryan_k"
 enable_extension "Resource_Monitor@Ory0n"
+enable_extension "just-perfection-desktop@just-perfection"
 
 log_ok "GNOME Shell configuration applied successfully."

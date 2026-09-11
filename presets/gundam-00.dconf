@@ -1,0 +1,83 @@
+# ==============================================================================
+# Project:     gundam-celestial-gnome-theme
+# Preset:      gundam-00
+# Target:      Manjaro 26.1.2 (Bian-May) | GNOME Shell 50.4 (Wayland)
+# Author:      Dausan Adam Parikesit
+# License:     MIT License (c) 2026
+# Description: Complete declarative UI preset for Gundam Celestial GNOME Theme
+# ==============================================================================
+
+[org/gnome/desktop/wm/preferences]
+button-layout='close,minimize,maximize:'
+
+[org/gnome/desktop/interface]
+color-scheme='prefer-dark'
+cursor-size=24
+cursor-theme='MacOS-Tahoe'
+document-font-name='JetBrains Mono 10'
+font-name='JetBrains Mono 10'
+gtk-theme='WhiteSur-Dark'
+icon-theme='Nordzy-dark'
+monospace-font-name='JetBrains Mono 10'
+
+[org/gnome/desktop/background]
+picture-uri='file://@REPO_DIR@/assets/img/gundam-light.jpg'
+picture-uri-dark='file://@REPO_DIR@/assets/img/gundam-dark.jpg'
+
+[org/gnome/desktop/screensaver]
+picture-uri='file://@REPO_DIR@/assets/img/gundam-lock.jpg'
+
+[org/gnome/shell]
+enabled-extensions=['dash-to-dock@micxgx.gmail.com', 'logomenu@aryan_k', 'Resource_Monitor@Ory0n', 'just-perfection-desktop@just-perfection', 'user-theme@gnome-shell-extensions.gcampax.github.com']
+
+[org/gnome/shell/extensions/dash-to-dock]
+autohide=true
+background-opacity=0.45
+custom-background-color=false
+dash-max-icon-size=48
+dock-fixed=false
+dock-position='BOTTOM'
+extend-height=false
+hide-in-overview=true
+intellihide=true
+isolate-workspaces=true
+transparency-mode='FIXED'
+
+[org/gnome/shell/extensions/logo-menu]
+custom-icon-path='@REPO_DIR@/assets/img/logo/cb.png'
+menu-button-icon-size=22
+show-activities-button=false
+show-lockscreen=true
+show-power-options=true
+symbolic-icon=false
+use-custom-icon=true
+
+[org/gnome/shell/extensions/resource-monitor]
+cpufrequencystatus=false
+cpuloadaveragestatus=false
+cpustatus=true
+diskspacestatus=false
+diskstatsstatus=false
+extensionposition='center'
+gpustatus=false
+netethstatus=false
+netwlanstatus=false
+ramstatus=true
+refreshtime=3
+swapstatus=false
+thermalcputemperaturestatus=false
+thermalgputemperaturestatus=false
+
+[org/gnome/shell/extensions/just-perfection]
+search=false
+
+[org/gnome/shell/extensions/user-theme]
+name='Gundam-Celestial'
+
+[org/gnome/settings-daemon/plugins/media-keys]
+custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/']
+
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0]
+binding='<Control>space'
+command='ulauncher-toggle'
+name='Ulauncher'
