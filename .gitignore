@@ -1,0 +1,9 @@
+# Temporary editor files
+*.swp
+*.swo
+*~
+*.bak
+
+# OS generated files
+.DS_Store
+Thumbs.db
