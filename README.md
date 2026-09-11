@@ -2,11 +2,11 @@
 
 [![Author](https://img.shields.io/badge/Author-Dausan%20Adam%20Parikesit-blue.svg)](#author--maintainer)
 [![Manjaro Linux](https://img.shields.io/badge/Manjaro-26.1.2%20Bian--May-35bf5c?logo=manjaro&logoColor=white)](https://manjaro.org)
-[![GNOME Shell](https://img.shields.io/badge/GNOME-50.4%20(Wayland)-4a86cf?logo=gnome&logoColor=white)](https://www.gnome.org)
-[![Memory Strategy](https://img.shields.io/badge/ZRAM-zstd%20(RAM%20size)-orange?logo=linux&logoColor=white)](https://github.com/systemd/zram-generator)
+[![GNOME Shell](<https://img.shields.io/badge/GNOME-50.4%20(Wayland)-4a86cf?logo=gnome&logoColor=white>)](https://www.gnome.org)
+[![Memory Strategy](<https://img.shields.io/badge/ZRAM-zstd%20(RAM%20size)-orange?logo=linux&logoColor=white>)](https://github.com/systemd/zram-generator)
 [![Typography](https://img.shields.io/badge/Font-JetBrains%20Mono%2010-blueviolet.svg)](#typography--cursor-specifications)
 [![Cursor](https://img.shields.io/badge/Cursor-MacOS%20Tahoe%2024px-lightgrey.svg)](#typography--cursor-specifications)
-[![Zero-Blur](https://img.shields.io/badge/Aesthetics-Flat%20RGBA%20(Zero--Blur)-cyan.svg)](#flat-rgba-transparency--aesthetics-zero-blur-policy)
+[![Zero-Blur](<https://img.shields.io/badge/Aesthetics-Flat%20RGBA%20(Zero--Blur)-cyan.svg>)](#flat-rgba-transparency--aesthetics-zero-blur-policy)
 [![Preset](https://img.shields.io/badge/Preset-gundam--00-purple.svg)](#declarative-preset-management-gundam-00)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -18,28 +18,28 @@ Inspired by **Mobile Suit Gundam 00: Celestial Being**, this profile blends macO
 
 ## Visual & Functional Specifications
 
-| Component | Target Configuration | Technical Implementation |
-| :--- | :--- | :--- |
-| **Window Controls** | Left-aligned macOS buttons (`close,minimize,maximize:`) | `org.gnome.desktop.wm.preferences button-layout` |
-| **Traffic Lights (GTK3/4)** | macOS red, yellow, and green circular window control buttons | WhiteSur GTK Dark theme + `~/.config/gtk-4.0/` & `gtk-3.0/` CSS |
-| **Typography** | JetBrains Mono (Interface, Monospace, Documents at 10pt) | `org.gnome.desktop.interface font-name 'JetBrains Mono 10'` |
-| **Cursor Theme** | MacOS Tahoe (locked to compact 24px) | `org.gnome.desktop.interface cursor-theme 'MacOS-Tahoe'` |
-| **Spotlight Shortcut** | Ulauncher application launcher mapped to `Ctrl + Space` | `~/.config/ulauncher/settings.json` + GNOME custom keybinding |
-| **Color Scheme** | Prefer Dark | `org.gnome.desktop.interface color-scheme 'prefer-dark'` |
-| **GTK Application Theme** | WhiteSur-Dark (macOS aesthetics) | `org.gnome.desktop.interface gtk-theme 'WhiteSur-Dark'` |
-| **Dynamic Wallpaper** | Gundam Celestial Being Dark & Light wallpapers | Native `org.gnome.desktop.background picture-uri-dark` & `picture-uri` |
-| **Lockscreen** | Gundam Celestial Being Lockscreen | `org.gnome.desktop.screensaver picture-uri` |
-| **Icon Theme** | `Nordzy-dark` (Pure SVG vector, 0MB RAM footprint) | `org.gnome.desktop.interface icon-theme 'Nordzy-dark'` |
-| **Dock** | Bottom-centered, floating, autohide, 48px icons, workspace isolation | `org.gnome.shell.extensions.dash-to-dock` |
-| **Dock Transparency** | Pure static RGBA alpha (`0.45` opacity, `FIXED` mode, zero blur) | `dash-to-dock transparency-mode 'FIXED'` & `background-opacity 0.45` |
-| **Top Bar Transparency** | Flat RGBA semi-transparent alpha (`rgba(18, 22, 28, 0.45)`) | `user-theme` extension (`Gundam-Celestial`) + `gnome-shell.css` |
-| **Dock Overview Fix** | Dock completely hides in Overview (`hide-in-overview true`) | `dconf: /org/gnome/shell/extensions/dash-to-dock/hide-in-overview` |
-| **Overview Search Bar** | Search box disabled in Overview (Spotlight delegated to Ulauncher) | `org.gnome.shell.extensions.just-perfection search false` + CSS |
-| **Top-Left Menu** | Celestial Being logo (`cb.png`) replacing Activities button with macOS dropdown | `org.gnome.shell.extensions.logo-menu` (`logomenu@aryan_k`) |
-| **Resource Monitor** | CPU and RAM usage strictly displayed to the right of center clock at 3000ms | `org.gnome.shell.extensions.resource-monitor` (`Resource_Monitor@Ory0n`) |
-| **Memory Strategy** | ZRAM (`zstd`, `zram-size = ram`) + sysctl paging tuning | `zram-generator` + `/etc/sysctl.d/99-zram.conf` |
-| **State Safety** | Automated timestamped dconf snapshots with 1-command rollback | `~/.config/dconf-backup-*.dconf` + `./install.sh --restore` |
-| **Preset System** | Atomic UI state import/export with dynamic path resolution | `presets/gundam-00.dconf` + `scripts/preset-manager.sh` |
+| Component                   | Target Configuration                                                            | Technical Implementation                                                 |
+| :-------------------------- | :------------------------------------------------------------------------------ | :----------------------------------------------------------------------- |
+| **Window Controls**         | Left-aligned macOS buttons (`close,minimize,maximize:`)                         | `org.gnome.desktop.wm.preferences button-layout`                         |
+| **Traffic Lights (GTK3/4)** | macOS red, yellow, and green circular window control buttons                    | WhiteSur GTK Dark theme + `~/.config/gtk-4.0/` & `gtk-3.0/` CSS          |
+| **Typography**              | JetBrains Mono (Interface, Monospace, Documents at 10pt)                        | `org.gnome.desktop.interface font-name 'JetBrains Mono 10'`              |
+| **Cursor Theme**            | MacOS Tahoe (locked to compact 24px)                                            | `org.gnome.desktop.interface cursor-theme 'MacOS-Tahoe'`                 |
+| **Spotlight Shortcut**      | Ulauncher application launcher mapped to `Ctrl + Space`                         | `~/.config/ulauncher/settings.json` + GNOME custom keybinding            |
+| **Color Scheme**            | Prefer Dark                                                                     | `org.gnome.desktop.interface color-scheme 'prefer-dark'`                 |
+| **GTK Application Theme**   | WhiteSur-Dark (macOS aesthetics)                                                | `org.gnome.desktop.interface gtk-theme 'WhiteSur-Dark'`                  |
+| **Dynamic Wallpaper**       | Gundam Celestial Being Dark & Light wallpapers                                  | Native `org.gnome.desktop.background picture-uri-dark` & `picture-uri`   |
+| **Lockscreen**              | Gundam Celestial Being Lockscreen                                               | `org.gnome.desktop.screensaver picture-uri`                              |
+| **Icon Theme**              | `Nordzy-dark` (Pure SVG vector, 0MB RAM footprint)                              | `org.gnome.desktop.interface icon-theme 'Nordzy-dark'`                   |
+| **Dock**                    | Bottom-centered, floating, autohide, 48px icons, workspace isolation            | `org.gnome.shell.extensions.dash-to-dock`                                |
+| **Dock Transparency**       | Pure static RGBA alpha (`0.45` opacity, `FIXED` mode, zero blur)                | `dash-to-dock transparency-mode 'FIXED'` & `background-opacity 0.45`     |
+| **Top Bar Transparency**    | Flat RGBA semi-transparent alpha (`rgba(18, 22, 28, 0.45)`)                     | `user-theme` extension (`Gundam-Celestial`) + `gnome-shell.css`          |
+| **Dock Overview Fix**       | Dock completely hides in Overview (`hide-in-overview true`)                     | `dconf: /org/gnome/shell/extensions/dash-to-dock/hide-in-overview`       |
+| **Overview Search Bar**     | Search box disabled in Overview (Spotlight delegated to Ulauncher)              | `org.gnome.shell.extensions.just-perfection search false` + CSS          |
+| **Top-Left Menu**           | Celestial Being logo (`cb.png`) replacing Activities button with macOS dropdown | `org.gnome.shell.extensions.logo-menu` (`logomenu@aryan_k`)              |
+| **Resource Monitor**        | CPU and RAM usage strictly displayed to the right of center clock at 3000ms     | `org.gnome.shell.extensions.resource-monitor` (`Resource_Monitor@Ory0n`) |
+| **Memory Strategy**         | ZRAM (`zstd`, `zram-size = ram`) + sysctl paging tuning                         | `zram-generator` + `/etc/sysctl.d/99-zram.conf`                          |
+| **State Safety**            | Automated timestamped dconf snapshots with 1-command rollback                   | `~/.config/dconf-backup-*.dconf` + `./install.sh --restore`              |
+| **Preset System**           | Atomic UI state import/export with dynamic path resolution                      | `presets/gundam-00.dconf` + `scripts/preset-manager.sh`                  |
 
 ---
 
@@ -56,37 +56,36 @@ Inspired by **Mobile Suit Gundam 00: Celestial Being**, this profile blends macO
 
 ---
 
-## Backup, Dry-Run & Rollback Guide
+## Backup & Recovery Guide
 
 The installation suite includes built-in safety nets to ensure your desktop environment can be audited before changes and rolled back instantly.
 
-### 1. Dry-Run Simulation Mode (`--dry-run`)
-Simulate network availability, repository asset integrity, and preview target schema configurations without modifying any system settings or writing to disk:
-```bash
-./install.sh --dry-run
-```
-
-### 2. Automated Restore Point Creation
+### 1. Automated Restore Point Creation
 Every time `./install.sh` runs, it automatically creates a full atomic snapshot of your GNOME `dconf` configuration before mutating any visual settings:
 - **Location**: `~/.config/dconf-backup-YYYYMMDD_HHMMSS.dconf`
 - **Scope**: Full system desktop state capture.
 
-### 3. Automated Instant Rollback (`--restore`)
+### 2. Automated Instant Rollback (`--restore`)
 If you want to revert all visual changes back to your original configuration, run:
 ```bash
 ./install.sh --restore
 ```
 *The script automatically detects the latest snapshot file in `~/.config/` and reloads it cleanly via `dconf load /`.*
 
-### 4. Manual Fallback Recovery
+### 3. Manual Fallback Recovery
 You can also manually inspect and restore any specific historical snapshot:
 ```bash
 # List all available backup snapshots
 ls -lt ~/.config/dconf-backup-*.dconf
 
 # Revert to a specific snapshot
-dconf load / < ~/.config/dconf-backup-20260911_114500.dconf
+dconf load / < ~/.config/dconf-backup-20260911_114231.dconf
 ```
+
+### 4. Libadwaita CSS Collision Guard
+To prevent broken rendering on systems with pre-existing custom GTK4 styles, the installer safeguards existing user stylesheets:
+- Existing `~/.config/gtk-4.0/gtk.css` is safely renamed to `~/.config/gtk-4.0/gtk.css.bak.$(date +%s)`.
+- Existing `~/.config/gtk-4.0/gtk-dark.css` is safely renamed to `~/.config/gtk-4.0/gtk-dark.css.bak.$(date +%s)`.
 
 ---
 
@@ -137,11 +136,14 @@ The GNOME Shell Activities Overview (triggered via the `Super` key) is optimized
 All desktop styling, extensions, and window behaviors are declaratively captured in `./presets/gundam-00.dconf`. The included `scripts/preset-manager.sh` utility manages applying, exporting, and backing up presets.
 
 ### Dynamic Absolute Path Tokenization
+
 To ensure presets are 100% portable across different machines, user accounts, and clone directories, paths in `.dconf` files use the `@REPO_DIR@` token:
+
 - When **applied**, `@REPO_DIR@` is dynamically replaced with the absolute repository path.
 - When **exported**, the current active repository path is dynamically tokenized back into `@REPO_DIR@`.
 
 ### Available Commands
+
 ```bash
 # Apply the default Gundam 00 preset
 ./scripts/preset-manager.sh apply gundam-00
@@ -210,9 +212,9 @@ gundam-celestial-gnome-theme/
 
 ---
 
-## Quickstart Installation
+## Quickstart
 
-Clone the repository and run the turnkey installation script:
+Clone the repository and run the single-command turnkey installation script:
 
 ```bash
 git clone https://github.com/parikesitad-pm/gundam-celestial-gnome-theme.git
@@ -220,13 +222,36 @@ cd gundam-celestial-gnome-theme
 ./install.sh
 ```
 
-### CLI Flags
-- `./install.sh`: Full turnkey pipeline with animated loader and automatic backup
-- `./install.sh --dry-run`: Simulate checks and preview schema changes non-destructively
-- `./install.sh --restore`: Instantly roll back system UI to the latest saved restore point
-- `./install.sh --user-only` (or `-u`): Run only user-space GNOME configuration, CSS injection, and preset application
-- `./install.sh --check` (or `-c`): Perform a non-destructive audit of system environment, assets, and settings
-- `./install.sh --help` (or `-h`): Display CLI usage
+---
+
+## CLI Flags Reference
+
+| Flag | Mode / Action | Description |
+| :--- | :--- | :--- |
+| *(None)* | **Turnkey Setup** | Full pipeline: ZRAM, packages, typography, cursor, CSS, extension hardening, preset, and relog prompt. |
+| `--doctor` | **System Diagnostic** | Audits ZRAM engine (`zramctl`), wallpaper URI accessibility, local icon/cursor assets, and extension status. |
+| `--dry-run` | **Safe Simulation** | Verifies network, assets, and previews schema changes non-destructively without disk writes. |
+| `--restore` | **Instant Rollback** | Discovers the latest timestamped `dconf` backup snapshot in `~/.config/` and reloads it immediately. |
+| `-u`, `--user-only` | **User-Space Only** | Applies user configurations, cursors, CSS injection, and presets without root/package prompts. |
+| `-c`, `--check` | **Asset Audit** | Runs the non-destructive audit and preview suite (alias for `--dry-run`). |
+| `-h`, `--help` | **Help Screen** | Displays command usage and available execution options. |
+
+---
+
+## Diagnostic Tooling (`--doctor`)
+
+Run the built-in diagnostic doctor to verify system health and configuration status at any time:
+
+```bash
+./install.sh --doctor
+```
+
+The diagnostic doctor systematically audits:
+1. **Memory Engine**: Verifies active ZRAM device (`/dev/zram0`), swap mount, and confirms high-speed `zstd` compression.
+2. **Wallpaper URI Validity**: Tests dark, light, and lockscreen wallpaper URIs against physical filesystem assets.
+3. **Icons & Cursors**: Verifies existence of `MacOS-Tahoe` (24px) and `Nordzy-dark` in `~/.local/share/icons/` (or `/usr/share/icons/`).
+4. **Extension Hardening**: Confirms `disable-user-extensions = false` and registers core extensions (`dash-to-dock`, `logomenu`, `Resource_Monitor`).
+5. **Libadwaita Window Controls**: Verifies active CSS stylesheet at `~/.config/gtk-4.0/gtk.css`.
 
 ---
 
@@ -235,16 +260,20 @@ cd gundam-celestial-gnome-theme
 After installation, verify the active environment:
 
 ### 1. Verify ZRAM Activation
+
 ```bash
 zramctl
 ```
+
 *Expected output:*
+
 ```text
 NAME       ALGORITHM DISKSIZE  DATA COMPR TOTAL STREAMS MOUNTPOINT
 /dev/zram0 zstd          7.5G    0B    0B    0B       X [SWAP]
 ```
 
 ### 2. Verify GNOME Settings & Aesthetics
+
 ```bash
 # Verify window button layout (left-aligned)
 gsettings get org.gnome.desktop.wm.preferences button-layout
@@ -279,11 +308,22 @@ gsettings get org.gnome.desktop.interface gtk-theme
 # Returns: 'WhiteSur-Dark'
 ```
 
-### 3. Wayland Session Refresh
-On Wayland sessions, newly installed extensions and GTK/shell CSS changes register cleanly after logging out and logging back in:
+---
+
+## Wayland Session Notice
+
+Because modern GNOME runs on native **Wayland** sessions without X11 server restarts (`Alt+F2` + `r` is unsupported on Wayland), newly installed Shell extensions, cursor schemes, and Libadwaita styling require an active session relog:
+
 ```bash
-gnome-session-quit --logout
+gnome-session-quit --logout --no-prompt
 ```
+
+At the completion of `./install.sh`, an interactive prompt asks if you would like to log out immediately:
+```text
+[✔] Setup selesai! Silakan relog untuk menerapkan semua perubahan visual.
+Mau logout sekarang? (y/N):
+```
+Answering `y` logs out cleanly, activating all visual elements and extensions on your next login.
 
 ---
 

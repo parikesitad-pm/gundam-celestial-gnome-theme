@@ -132,6 +132,22 @@ set_gsetting "org.gnome.desktop.interface" "cursor-size" "24"
 # ------------------------------------------------------------------------------
 log_info "Configuring Icon Theme & Dash to Dock..."
 
+# Ensure Nordzy-dark icon theme exists in ~/.local/share/icons if not installed system-wide
+NORDZY_USER_DIR="${HOME}/.local/share/icons/Nordzy-dark"
+if [[ ! -d "${NORDZY_USER_DIR}" && ! -d "/usr/share/icons/Nordzy-dark" ]]; then
+    mkdir -p "${HOME}/.local/share/icons"
+    log_info "Fetching & Extracting Nordzy-dark vector icons..."
+    TMP_NORDZY_TAR="/tmp/Nordzy-dark.tar.gz"
+    rm -f "${TMP_NORDZY_TAR}"
+    if curl -sL --fail --connect-timeout 6 "https://github.com/MolassesLover/Nordzy-icon/releases/download/1.8.7/Nordzy-dark.tar.gz" -o "${TMP_NORDZY_TAR}"; then
+        tar -xzf "${TMP_NORDZY_TAR}" -C "${HOME}/.local/share/icons/"
+        rm -f "${TMP_NORDZY_TAR}"
+        log_ok "Nordzy-dark icon theme deployed to ${NORDZY_USER_DIR}."
+    else
+        log_warn "Failed to download Nordzy-dark icons. Fallback to system icons."
+    fi
+fi
+
 # Icon & GTK Themes: Nordzy-dark (SVG vector) & WhiteSur-Dark (macOS aesthetics)
 set_gsetting "org.gnome.desktop.interface" "icon-theme" "'Nordzy-dark'"
 set_gsetting "org.gnome.desktop.interface" "gtk-theme" "'WhiteSur-Dark'"
@@ -306,6 +322,17 @@ headerbar windowcontrols button:backdrop {
 EOF
 )
 
+# Libadwaita CSS Collision Guard: backup pre-existing gtk.css to prevent broken rendering
+if [[ -f "${GTK4_CONFIG_DIR}/gtk.css" ]]; then
+    local_gtk_backup="${GTK4_CONFIG_DIR}/gtk.css.bak.$(date +%s)"
+    mv "${GTK4_CONFIG_DIR}/gtk.css" "${local_gtk_backup}"
+    log_info "Pre-existing GTK4 CSS backed up to: $(basename "${local_gtk_backup}")"
+fi
+if [[ -f "${GTK4_CONFIG_DIR}/gtk-dark.css" ]]; then
+    local_gtk_dark_backup="${GTK4_CONFIG_DIR}/gtk-dark.css.bak.$(date +%s)"
+    mv "${GTK4_CONFIG_DIR}/gtk-dark.css" "${local_gtk_dark_backup}"
+fi
+
 # Inject into GTK4/Libadwaita configurations
 echo "${TRAFFIC_LIGHTS_CSS}" > "${GTK4_CONFIG_DIR}/gtk.css"
 echo "${TRAFFIC_LIGHTS_CSS}" > "${GTK4_CONFIG_DIR}/gtk-dark.css"
@@ -400,13 +427,39 @@ dconf write /org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/cus
 log_ok "GNOME custom shortcut mapped: Ctrl + Space -> ulauncher-toggle."
 
 # ------------------------------------------------------------------------------
-# 8. Enable Extensions
+# 8. Extension Auto-Activation & Hardening
 # ------------------------------------------------------------------------------
-log_info "Enabling GNOME extensions..."
-enable_extension "user-theme@gnome-shell-extensions.gcampax.github.com"
-enable_extension "dash-to-dock@micxgx.gmail.com"
-enable_extension "logomenu@aryan_k"
-enable_extension "Resource_Monitor@Ory0n"
-enable_extension "just-perfection-desktop@just-perfection"
+log_info "Hardening & Auto-Activating GNOME Extensions..."
+
+# Explicitly disable extension lock
+gsettings set org.gnome.shell disable-user-extensions false
+log_ok "org.gnome.shell -> disable-user-extensions = false"
+
+CORE_EXTENSION_UUIDS=(
+    "dash-to-dock@micxgx.gmail.com"
+    "logomenu@aryan_k"
+    "Resource_Monitor@Ory0n"
+    "user-theme@gnome-shell-extensions.gcampax.github.com"
+    "just-perfection-desktop@just-perfection"
+)
+
+# Programmatically enable via gnome-extensions CLI
+for uuid in "${CORE_EXTENSION_UUIDS[@]}"; do
+    enable_extension "${uuid}"
+done
+
+# Ensure core extension UUIDs are registered directly in org.gnome.shell enabled-extensions
+current_exts="$(gsettings get org.gnome.shell enabled-extensions 2>/dev/null || echo '[]')"
+for uuid in "${CORE_EXTENSION_UUIDS[@]}"; do
+    if [[ ! "${current_exts}" =~ "${uuid}" ]]; then
+        if [[ "${current_exts}" == "@as []" || "${current_exts}" == "[]" ]]; then
+            current_exts="['${uuid}']"
+        else
+            current_exts="${current_exts%]*}, '${uuid}']"
+        fi
+    fi
+done
+gsettings set org.gnome.shell enabled-extensions "${current_exts}" 2>/dev/null || true
+log_ok "Core extensions registered in org.gnome.shell enabled-extensions."
 
 log_ok "GNOME Shell configuration applied successfully."

@@ -34,22 +34,18 @@ log_banner() {
 }
 
 show_help() {
-    cat <<EOF
-${BOLD}Gundam Celestial GNOME Theme - Installation & Management Tool${NC}
-Author: Dausan Adam Parikesit | License: MIT (c) 2026
-
-Usage: $(basename "$0") [OPTIONS]
-
-Options:
-  --restore         Instantly restore the latest dconf desktop state snapshot
-  --dry-run         Simulate checks, network, and preview schema changes without writing
-  -u, --user-only   Apply user-space configurations and preset only (skip root ZRAM/packages)
-  -c, --check       Perform non-destructive environment and asset audit
-  -h, --help        Display this help screen
-
-Default:
-  Runs the full turnkey installation pipeline with live CLI animated loader.
-EOF
+    echo -e "${BOLD}Gundam Celestial GNOME Theme - Installation & Management Tool${NC}"
+    echo -e "Author: Dausan Adam Parikesit | License: MIT (c) 2026\n"
+    echo -e "Usage: $(basename "$0") [OPTIONS]\n"
+    echo -e "Options:"
+    echo -e "  --doctor          Run comprehensive system & configuration diagnostic audit"
+    echo -e "  --restore         Instantly restore the latest dconf desktop state snapshot"
+    echo -e "  --dry-run         Simulate checks, network, and preview schema changes without writing"
+    echo -e "  -u, --user-only   Apply user-space configurations and preset only (skip root ZRAM/packages)"
+    echo -e "  -c, --check       Perform non-destructive environment and asset audit"
+    echo -e "  -h, --help        Display this help screen\n"
+    echo -e "Default:"
+    echo -e "  Runs the full turnkey installation pipeline with live CLI animated loader."
 }
 
 log_info() { echo -e "${CYAN}[INFO]${NC} $*"; }
@@ -187,6 +183,130 @@ simulate_dry_run() {
 }
 
 # ------------------------------------------------------------------------------
+# Diagnostic Doctor Engine
+# ------------------------------------------------------------------------------
+run_doctor() {
+    log_banner
+    echo -e "${BOLD}${CYAN}=== GUNDAM CELESTIAL SYSTEM DIAGNOSTIC DOCTOR ===${NC}\n"
+    local issues=0
+
+    # 1. ZRAM Engine & Compression Status
+    echo -e "${BOLD}1. Memory Engine (ZRAM & Compression Algorithm):${NC}"
+    if command -v zramctl >/dev/null 2>&1; then
+        local zram_output
+        zram_output="$(zramctl --noheadings 2>/dev/null || true)"
+        if [[ -n "${zram_output}" ]]; then
+            local zram_dev zram_alg zram_size zram_mount
+            zram_dev="$(echo "${zram_output}" | awk '{print $1}' | head -n 1)"
+            zram_alg="$(echo "${zram_output}" | awk '{print $2}' | head -n 1)"
+            zram_size="$(echo "${zram_output}" | awk '{print $3}' | head -n 1)"
+            zram_mount="$(echo "${zram_output}" | awk '{print $NF}' | head -n 1)"
+
+            if [[ "${zram_alg}" == *"zstd"* ]]; then
+                log_ok "ZRAM device active: ${zram_dev} (${zram_size}) [${zram_mount}]"
+                log_ok "Compression engine: ${zram_alg} (Optimal high-speed zstd compression)"
+            else
+                log_warn "ZRAM device active (${zram_dev}), but algorithm is '${zram_alg}' instead of 'zstd'."
+            fi
+        else
+            log_err "No active ZRAM device found. Check systemd-zram-setup@zram0 service."
+            ((issues++))
+        fi
+    else
+        log_err "zramctl command not found on system."
+        ((issues++))
+    fi
+
+    # 2. Wallpaper URI Validity
+    echo -e "\n${BOLD}2. Desktop Wallpaper URI Accessibility:${NC}"
+    local wp_dark wp_light wp_lock
+    wp_dark="$(gsettings get org.gnome.desktop.background picture-uri-dark 2>/dev/null | tr -d "'" || true)"
+    wp_light="$(gsettings get org.gnome.desktop.background picture-uri 2>/dev/null | tr -d "'" || true)"
+    wp_lock="$(gsettings get org.gnome.desktop.screensaver picture-uri 2>/dev/null | tr -d "'" || true)"
+
+    local wp_items=(
+        "Dark Wallpaper:${wp_dark}"
+        "Light Wallpaper:${wp_light}"
+        "Lockscreen Wallpaper:${wp_lock}"
+    )
+
+    for item in "${wp_items[@]}"; do
+        local label="${item%%:*}"
+        local uri="${item#*:}"
+        local path="${uri#file://}"
+        if [[ -n "${path}" && -f "${path}" ]]; then
+            log_ok "${label}: Valid and readable -> ${path}"
+        else
+            log_err "${label}: Missing or invalid URI -> '${uri}'"
+            ((issues++))
+        fi
+    done
+
+    # 3. Cursor & Icon Themes in ~/.local/share/icons/
+    echo -e "\n${BOLD}3. Local User Icons & Cursor Assets (~/.local/share/icons/):${NC}"
+    local icons_dir="${HOME}/.local/share/icons"
+    local tahoe_dir="${icons_dir}/MacOS-Tahoe"
+    if [[ -d "${tahoe_dir}/cursors" && -f "${tahoe_dir}/index.theme" ]]; then
+        log_ok "MacOS Tahoe Cursor: Located in ${tahoe_dir}"
+    elif [[ -d "/usr/share/icons/MacOS-Tahoe" ]]; then
+        log_ok "MacOS Tahoe Cursor: Located system-wide in /usr/share/icons/MacOS-Tahoe"
+    else
+        log_err "MacOS Tahoe Cursor: Missing in ${tahoe_dir}"
+        ((issues++))
+    fi
+
+    local nordzy_dir="${icons_dir}/Nordzy-dark"
+    if [[ -d "${nordzy_dir}" || -d "${icons_dir}/Nordzy" ]]; then
+        log_ok "Nordzy Icon Theme: Located in ${nordzy_dir}"
+    elif [[ -d "/usr/share/icons/Nordzy-dark" || -d "/usr/share/icons/Nordzy" ]]; then
+        log_ok "Nordzy Icon Theme: Located system-wide in /usr/share/icons/Nordzy-dark"
+    else
+        log_err "Nordzy Icon Theme: Missing in ${nordzy_dir}"
+        ((issues++))
+    fi
+
+    # 4. GNOME Extensions & Hardening Safeguards
+    echo -e "\n${BOLD}4. Extension Auto-Activation Status:${NC}"
+    local ext_disabled
+    ext_disabled="$(gsettings get org.gnome.shell disable-user-extensions 2>/dev/null || echo 'false')"
+    if [[ "${ext_disabled}" == "false" ]]; then
+        log_ok "Extension Lock: Disabled (disable-user-extensions = false)"
+    else
+        log_err "Extension Lock: Active (disable-user-extensions = true)"
+        ((issues++))
+    fi
+
+    local core_exts=("dash-to-dock@micxgx.gmail.com" "logomenu@aryan_k" "Resource_Monitor@Ory0n")
+    local enabled_exts
+    enabled_exts="$(gsettings get org.gnome.shell enabled-extensions 2>/dev/null || echo '[]')"
+    for ext_uuid in "${core_exts[@]}"; do
+        if [[ "${enabled_exts}" =~ "${ext_uuid}" ]]; then
+            log_ok "Core Extension: Registered (${ext_uuid})"
+        else
+            log_warn "Core Extension: Not yet in enabled list (${ext_uuid})"
+        fi
+    done
+
+    # 5. GTK4 Libadwaita Stylesheet Guard
+    echo -e "\n${BOLD}5. Libadwaita Window Controls & Stylesheet:${NC}"
+    if [[ -f "${HOME}/.config/gtk-4.0/gtk.css" ]]; then
+        log_ok "GTK4 Window Controls: Active in ~/.config/gtk-4.0/gtk.css"
+    else
+        log_warn "GTK4 Window Controls: Not found at ~/.config/gtk-4.0/gtk.css"
+    fi
+
+    # Diagnostic Summary
+    echo -e "\n----------------------------------------------------------------------"
+    if [[ ${issues} -eq 0 ]]; then
+        echo -e "${BOLD}${GREEN}✓ DOCTOR AUDIT PASSED: All system parameters healthy and operational.${NC}\n"
+        exit 0
+    else
+        echo -e "${BOLD}${YELLOW}⚠ DOCTOR AUDIT: Detected ${issues} issue(s). Review recommendations above.${NC}\n"
+        exit 1
+    fi
+}
+
+# ------------------------------------------------------------------------------
 # Modular Step Wrappers
 # ------------------------------------------------------------------------------
 step_backup() {
@@ -232,6 +352,22 @@ step_gnome_config() {
     "${SCRIPTS_DIR}/03-gnome-config.sh"
 }
 
+step_extensions() {
+    gsettings set org.gnome.shell disable-user-extensions false
+    local core_exts=(
+        "dash-to-dock@micxgx.gmail.com"
+        "logomenu@aryan_k"
+        "Resource_Monitor@Ory0n"
+        "user-theme@gnome-shell-extensions.gcampax.github.com"
+        "just-perfection-desktop@just-perfection"
+    )
+    if command -v gnome-extensions >/dev/null 2>&1; then
+        for ext in "${core_exts[@]}"; do
+            gnome-extensions enable "${ext}" 2>/dev/null || true
+        done
+    fi
+}
+
 step_preset() {
     "${SCRIPTS_DIR}/preset-manager.sh" apply gundam-00
 }
@@ -244,6 +380,9 @@ main() {
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
+            --doctor)
+                run_doctor
+                ;;
             --restore)
                 restore_backup
                 ;;
@@ -310,7 +449,10 @@ main() {
     # Step 5: Window controls, top bar & overview
     run_step "Linking WhiteSur Mac Window Controls & Libadwaita CSS" step_gnome_config
 
-    # Step 6: Preset finalization
+    # Step 6: Extension auto-activation & hardening
+    run_step "Auto-Activating & Hardening GNOME Extensions" step_extensions
+
+    # Step 7: Preset finalization
     run_step "Applying Declarative Preset 'gundam-00'" step_preset
 
     echo -e "\n${BOLD}${GREEN}======================================================================${NC}"
@@ -328,6 +470,17 @@ main() {
     echo -e "  • Preset:     'gundam-00' loaded atomically via dconf"
     echo -e "  • Backup:     Restore point created in ~/.config/dconf-backup-*.dconf"
     echo -e "\n${CYAN}Rollback available anytime via:${NC} ./install.sh --restore\n"
+
+    # Interactive Wayland Session Relog Prompt
+    if [[ -t 0 && -t 1 ]]; then
+        echo -e "\n[✔] Setup selesai! Silakan relog untuk menerapkan semua perubahan visual."
+        read -rp "Mau logout sekarang? (y/N): " relog_choice
+        if [[ "${relog_choice}" =~ ^[Yy]$ ]]; then
+            gnome-session-quit --logout --no-prompt
+        fi
+    else
+        echo -e "\n[✔] Setup selesai! Silakan relog untuk menerapkan semua perubahan visual (gnome-session-quit --logout --no-prompt).\n"
+    fi
 }
 
 main "$@"
