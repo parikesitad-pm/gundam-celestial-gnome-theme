@@ -3,7 +3,7 @@
 # Project:     gundam-celestial-gnome-theme
 # Module:      03 - GNOME Shell & UI Configuration (scripts/03-gnome-config.sh)
 # Target:      Manjaro 26.1.2 (Bian-May) | GNOME Shell 50.4 (Wayland)
-# Author:      Dausan Adam Parikesit
+# Author:      parikesitad-pm
 # License:     MIT License (c) 2026
 # Declarative gsettings: macOS window controls, dynamic wallpapers, Nordzy icons,
 # floating autohide dock (hide-in-overview), Celestial Being Logo Menu, lean CPU/RAM
@@ -74,25 +74,38 @@ set_gsetting "org.gnome.desktop.wm.preferences" "button-layout" "'close,minimize
 # Default color scheme: prefer-dark
 set_gsetting "org.gnome.desktop.interface" "color-scheme" "'prefer-dark'"
 
-# Dynamic Wallpapers
+# Persistent Dynamic Wallpapers & Lockscreen
 DARK_WP="${REPO_DIR}/assets/img/gundam-dark.jpg"
 LIGHT_WP="${REPO_DIR}/assets/img/gundam-light.jpg"
 LOCK_WP="${REPO_DIR}/assets/img/gundam-lock.jpg"
 
+BG_DIR="${HOME}/.local/share/backgrounds"
+mkdir -p "${BG_DIR}"
+
 if [[ -f "${DARK_WP}" ]]; then
-    set_gsetting "org.gnome.desktop.background" "picture-uri-dark" "'file://${DARK_WP}'"
+    cp -f "${DARK_WP}" "${BG_DIR}/gundam-dark.jpg"
+    chmod 644 "${BG_DIR}/gundam-dark.jpg"
+    set_gsetting "org.gnome.desktop.background" "picture-uri-dark" "'file://${BG_DIR}/gundam-dark.jpg'"
+    set_gsetting "org.gnome.desktop.background" "picture-options" "'zoom'"
 else
     log_warn "Dark wallpaper not found at: ${DARK_WP}"
 fi
 
 if [[ -f "${LIGHT_WP}" ]]; then
-    set_gsetting "org.gnome.desktop.background" "picture-uri" "'file://${LIGHT_WP}'"
+    cp -f "${LIGHT_WP}" "${BG_DIR}/gundam-light.jpg"
+    chmod 644 "${BG_DIR}/gundam-light.jpg"
+    set_gsetting "org.gnome.desktop.background" "picture-uri" "'file://${BG_DIR}/gundam-light.jpg'"
+    set_gsetting "org.gnome.desktop.background" "picture-options" "'zoom'"
 else
     log_warn "Light wallpaper not found at: ${LIGHT_WP}"
 fi
 
 if [[ -f "${LOCK_WP}" ]]; then
-    set_gsetting "org.gnome.desktop.screensaver" "picture-uri" "'file://${LOCK_WP}'"
+    cp -f "${LOCK_WP}" "${BG_DIR}/gundam-lock.jpg"
+    chmod 644 "${BG_DIR}/gundam-lock.jpg"
+    set_gsetting "org.gnome.desktop.screensaver" "picture-uri" "'file://${BG_DIR}/gundam-lock.jpg'"
+    set_gsetting "org.gnome.desktop.screensaver" "picture-uri-dark" "'file://${BG_DIR}/gundam-lock.jpg'"
+    set_gsetting "org.gnome.desktop.screensaver" "picture-options" "'zoom'"
 else
     log_warn "Lockscreen wallpaper not found at: ${LOCK_WP}"
 fi
@@ -165,6 +178,10 @@ set_gsetting "org.gnome.shell.extensions.dash-to-dock" "isolate-workspaces" "tru
 set_gsetting "org.gnome.shell.extensions.dash-to-dock" "transparency-mode" "'FIXED'"
 set_gsetting "org.gnome.shell.extensions.dash-to-dock" "background-opacity" "0.45"
 set_gsetting "org.gnome.shell.extensions.dash-to-dock" "custom-background-color" "false"
+
+# Window controls: click-to-minimize and running indicators
+set_gsetting "org.gnome.shell.extensions.dash-to-dock" "click-action" "'minimize-or-previews'"
+set_gsetting "org.gnome.shell.extensions.dash-to-dock" "show-running" "true"
 
 # Dock collision fix: hide dock completely in GNOME Shell overview (Super key)
 dconf write /org/gnome/shell/extensions/dash-to-dock/hide-in-overview true

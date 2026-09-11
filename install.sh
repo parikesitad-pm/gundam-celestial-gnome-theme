@@ -3,7 +3,7 @@
 # Project:     gundam-celestial-gnome-theme
 # Module:      Master Turnkey Orchestrator (install.sh)
 # Target:      Manjaro 26.1.2 (Bian-May) | GNOME Shell 50.4 (Wayland)
-# Author:      Dausan Adam Parikesit
+# Author:      parikesitad-pm
 # License:     MIT License (c) 2026
 # Description: Turnkey installation engine with animated CLI loader, state backup,
 #              Tahoe cursor, JetBrains Mono typography, and rollback recovery
@@ -30,12 +30,12 @@ SCRIPTS_DIR="${REPO_DIR}/scripts"
 
 log_banner() {
     echo -e "${CYAN}${BOLD}❖ GUNDAM CELESTIAL BEING | GNOME 50.4 (WAYLAND)${NC}"
-    echo -e "${BLUE}  Architect: Dausan Adam Parikesit | 8GB RAM ZRAM Optimized | Preset: gundam-00${NC}\n"
+    echo -e "${BLUE}  Architect: parikesitad-pm | 8GB RAM ZRAM Optimized | Preset: gundam-00${NC}\n"
 }
 
 show_help() {
     echo -e "${BOLD}Gundam Celestial GNOME Theme - Installation & Management Tool${NC}"
-    echo -e "Author: Dausan Adam Parikesit | License: MIT (c) 2026\n"
+    echo -e "Author: parikesitad-pm | License: MIT (c) 2026\n"
     echo -e "Usage: $(basename "$0") [OPTIONS]\n"
     echo -e "Options:"
     echo -e "  --doctor          Run comprehensive system & configuration diagnostic audit"
@@ -217,8 +217,8 @@ run_doctor() {
         ((issues++))
     fi
 
-    # 2. Wallpaper URI Validity
-    echo -e "\n${BOLD}2. Desktop Wallpaper URI Accessibility:${NC}"
+    # 2. Wallpaper & Lockscreen URI Validity & Permissions
+    echo -e "\n${BOLD}2. Desktop Wallpaper & Lockscreen URI Validity:${NC}"
     local wp_dark wp_light wp_lock
     wp_dark="$(gsettings get org.gnome.desktop.background picture-uri-dark 2>/dev/null | tr -d "'" || true)"
     wp_light="$(gsettings get org.gnome.desktop.background picture-uri 2>/dev/null | tr -d "'" || true)"
@@ -235,7 +235,9 @@ run_doctor() {
         local uri="${item#*:}"
         local path="${uri#file://}"
         if [[ -n "${path}" && -f "${path}" ]]; then
-            log_ok "${label}: Valid and readable -> ${path}"
+            local perms
+            perms="$(stat -c '%a' "${path}" 2>/dev/null || echo "644")"
+            log_ok "${label}: Valid and readable (${perms}) -> ${path}"
         else
             log_err "${label}: Missing or invalid URI -> '${uri}'"
             ((issues++))
@@ -293,6 +295,36 @@ run_doctor() {
         log_ok "GTK4 Window Controls: Active in ~/.config/gtk-4.0/gtk.css"
     else
         log_warn "GTK4 Window Controls: Not found at ~/.config/gtk-4.0/gtk.css"
+    fi
+
+    # 6. Firefox macOS & Gundam userChrome Deployment Status
+    echo -e "\n${BOLD}6. Firefox macOS & Gundam userChrome Status:${NC}"
+    local ff_dir="${HOME}/.mozilla/firefox"
+    local ff_verified=false
+    if [[ -d "${ff_dir}" ]]; then
+        local ff_profiles=()
+        while IFS= read -r -d '' p_dir; do
+            ff_profiles+=("${p_dir}")
+        done < <(find "${ff_dir}" -maxdepth 1 -mindepth 1 -type d \( -name "*.default*" -o -name "*release*" \) -print0 2>/dev/null)
+
+        for p in "${ff_profiles[@]}"; do
+            local uc="${p}/chrome/userChrome.css"
+            local cc="${p}/chrome/customChrome.css"
+            if [[ -f "${uc}" ]] && grep -Fq "Gundam Celestial Being" "${uc}" 2>/dev/null; then
+                log_ok "Firefox userChrome.css: Verified in $(basename "${p}")"
+                ff_verified=true
+            elif [[ -f "${cc}" ]] && grep -Fq "Gundam Celestial Being" "${cc}" 2>/dev/null; then
+                log_ok "Firefox customChrome.css: Verified in $(basename "${p}")"
+                ff_verified=true
+            fi
+        done
+        if [[ "${ff_verified}" == "true" ]]; then
+            log_ok "Firefox Gundam styling: Active & operational"
+        else
+            log_warn "Firefox userChrome styling not detected in default profiles."
+        fi
+    else
+        log_info "Firefox directory not present. Skipping browser audit."
     fi
 
     # Diagnostic Summary
@@ -366,6 +398,10 @@ step_extensions() {
             gnome-extensions enable "${ext}" 2>/dev/null || true
         done
     fi
+}
+
+step_firefox() {
+    "${SCRIPTS_DIR}/04-firefox.sh"
 }
 
 step_preset() {
@@ -452,14 +488,17 @@ main() {
     # Step 6: Extension auto-activation & hardening
     run_step "Auto-Activating & Hardening GNOME Extensions" step_extensions
 
-    # Step 7: Preset finalization
+    # Step 7: Firefox styling
+    run_step "Deploying Firefox macOS & Gundam Celestial Styling" step_firefox
+
+    # Step 8: Preset finalization
     run_step "Applying Declarative Preset 'gundam-00'" step_preset
 
     echo -e "\n${BOLD}${GREEN}======================================================================${NC}"
     echo -e "${BOLD}${GREEN}✓ GUNDAM CELESTIAL THEME INSTALLED & CONFIGURED SUCCESSFULLY${NC}"
     echo -e "${BOLD}${GREEN}======================================================================${NC}"
     echo -e "Summary of Applied Components:"
-    echo -e "  • Author:     Dausan Adam Parikesit (MIT License 2026)"
+    echo -e "  • Author:     parikesitad-pm (MIT License 2026)"
     echo -e "  • Memory:     ZRAM (zstd, zram-size=ram) with optimized sysctl parameters"
     echo -e "  • Typography: JetBrains Mono 10 (Interface, Monospace, Document)"
     echo -e "  • Cursor:     MacOS Tahoe (24px compact)"
@@ -467,19 +506,22 @@ main() {
     echo -e "  • Dock:       Floating Dash-to-Dock (0.45 flat RGBA, hide-in-overview)"
     echo -e "  • Overview:   Clutter-free window spread (search bar hidden for Ulauncher)"
     echo -e "  • Shortcut:   Ulauncher Spotlight mapped to Ctrl + Space"
+    echo -e "  • Firefox:    macOS rounded traffic lights & GN particle green highlights"
     echo -e "  • Preset:     'gundam-00' loaded atomically via dconf"
     echo -e "  • Backup:     Restore point created in ~/.config/dconf-backup-*.dconf"
     echo -e "\n${CYAN}Rollback available anytime via:${NC} ./install.sh --restore\n"
 
     # Interactive Wayland Session Relog Prompt
     if [[ -t 0 && -t 1 ]]; then
-        echo -e "\n[✔] Setup selesai! Silakan relog untuk menerapkan semua perubahan visual."
-        read -rp "Mau logout sekarang? (y/N): " relog_choice
+        echo -e "\n[✔] Setup completed! A session reload is required to apply all visual changes."
+        read -rp "Log out now to apply changes? (y/N): " relog_choice
         if [[ "${relog_choice}" =~ ^[Yy]$ ]]; then
-            gnome-session-quit --logout --no-prompt
+            sync
+            echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null 2>&1 || true
+            loginctl terminate-user "$USER" || gnome-session-quit --logout --no-prompt --force
         fi
     else
-        echo -e "\n[✔] Setup selesai! Silakan relog untuk menerapkan semua perubahan visual (gnome-session-quit --logout --no-prompt).\n"
+        echo -e "\n[✔] Setup completed! A session reload is required to apply all visual changes (loginctl terminate-user \"$USER\").\n"
     fi
 }
 

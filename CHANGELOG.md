@@ -5,9 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-09-11
+
+### Added
+- Gundam-themed macOS window controls and GN particle green tab highlights for Firefox via automated `userChrome.css` and `user.js` profile deployment.
+
+### Fixed
+- Lockscreen wallpaper path resolution with persistent user background storage (`~/.local/share/backgrounds/`) and explicit `644` file permissions.
+- Instant user session logout via `loginctl terminate-user` replacing hanging subshell calls.
+- Dash to Dock window click-to-minimize behavior (`minimize-or-previews`) and active running indicators (`show-running`).
+
+### Changed
+- Localized all terminal prompts, CLI messages, and scripts entirely to English.
+- Standardized project author metadata and attribution strictly to `parikesitad-pm`.
+
 ## [1.1.0] - 2026-09-11
 
 ### Added
+
 - Diagnostic auditing CLI flag (`--doctor`) verifying active ZRAM kernel device status and zstd compression, wallpaper URI accessibility, local icon and cursor assets, and extension registration.
 - Interactive Wayland session relog confirmation prompt (`gnome-session-quit --logout --no-prompt`) upon completing installation pipeline.
 - Pre-existing Libadwaita stylesheet collision guard backing up `~/.config/gtk-4.0/gtk.css` and `gtk-dark.css` to timestamped backups (`gtk.css.bak.<timestamp>`) prior to applying WhiteSur styling.

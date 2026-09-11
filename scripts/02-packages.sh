@@ -3,7 +3,7 @@
 # Project:     gundam-celestial-gnome-theme
 # Module:      02 - Package & Dependency Management (scripts/02-packages.sh)
 # Target:      Manjaro 26.1.2 (Bian-May) | GNOME Shell 50.4 (Wayland)
-# Author:      Dausan Adam Parikesit
+# Author:      parikesitad-pm
 # License:     MIT License (c) 2026
 # Dependencies: Nordzy-dark, Dash-to-Dock, Logo Menu, Resource Monitor, Just Perfection
 # ==============================================================================

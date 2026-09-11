@@ -3,7 +3,7 @@
 # Project:     gundam-celestial-gnome-theme
 # Module:      Preset Management Utility (scripts/preset-manager.sh)
 # Target:      Manjaro 26.1.2 (Bian-May) | GNOME Shell 50.4 (Wayland)
-# Author:      Dausan Adam Parikesit
+# Author:      parikesitad-pm
 # License:     MIT License (c) 2026
 # Description: Declarative dconf preset manager supporting atomic apply & export
 #              with portable dynamic repository path tokenization (@REPO_DIR@)
@@ -34,7 +34,7 @@ mkdir -p "${PRESETS_DIR}"
 show_help() {
     cat <<EOF
 ${BOLD}Gundam Celestial Being - Declarative Preset Manager${NC}
-Author: Dausan Adam Parikesit | License: MIT (c) 2026
+Author: parikesitad-pm | License: MIT (c) 2026
 
 Usage: $(basename "$0") <command> [preset-name]
 
@@ -66,6 +66,16 @@ apply_preset() {
 
     log_info "Applying preset '${name}' from: ${file}"
     log_info "Substituting dynamic repository path: ${REPO_DIR}"
+
+    # Ensure wallpapers are deployed to persistent user background directory with 644 permissions
+    local bg_dir="${HOME}/.local/share/backgrounds"
+    mkdir -p "${bg_dir}"
+    for wp in gundam-dark.jpg gundam-light.jpg gundam-lock.jpg; do
+        if [[ -f "${REPO_DIR}/assets/img/${wp}" ]]; then
+            cp -f "${REPO_DIR}/assets/img/${wp}" "${bg_dir}/${wp}"
+            chmod 644 "${bg_dir}/${wp}"
+        fi
+    done
 
     # Replace @REPO_DIR@ and {{REPO_DIR}} placeholders with actual absolute REPO_DIR
     local temp_conf
@@ -137,7 +147,7 @@ export_preset() {
 # Project:     gundam-celestial-gnome-theme
 # Preset:      ${name}
 # Target:      Manjaro 26.1.2 (Bian-May) | GNOME Shell 50.4 (Wayland)
-# Author:      Dausan Adam Parikesit
+# Author:      parikesitad-pm
 # License:     MIT License (c) 2026
 # Exported At: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
 # ==============================================================================

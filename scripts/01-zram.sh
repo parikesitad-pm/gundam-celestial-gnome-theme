@@ -3,7 +3,7 @@
 # Project:     gundam-celestial-gnome-theme
 # Module:      01 - ZRAM Memory Strategy (scripts/01-zram.sh)
 # Target:      Manjaro 26.1.2 (Bian-May) | GNOME Shell 50.4 (Wayland)
-# Author:      Dausan Adam Parikesit
+# Author:      parikesitad-pm
 # License:     MIT License (c) 2026
 # Description: Configures zram-generator (zstd, zram-size=ram) & sysctl memory tuning
 # ==============================================================================

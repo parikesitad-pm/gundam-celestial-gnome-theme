@@ -2,7 +2,7 @@
 # Project:     gundam-celestial-gnome-theme
 # Preset:      gundam-00
 # Target:      Manjaro 26.1.2 (Bian-May) | GNOME Shell 50.4 (Wayland)
-# Author:      Dausan Adam Parikesit
+# Author:      parikesitad-pm
 # License:     MIT License (c) 2026
 # Description: Complete declarative UI preset for Gundam Celestial GNOME Theme
 # ==============================================================================
@@ -21,11 +21,14 @@ icon-theme='Nordzy-dark'
 monospace-font-name='JetBrains Mono 10'
 
 [org/gnome/desktop/background]
+picture-options='zoom'
 picture-uri='file://@REPO_DIR@/assets/img/gundam-light.jpg'
 picture-uri-dark='file://@REPO_DIR@/assets/img/gundam-dark.jpg'
 
 [org/gnome/desktop/screensaver]
+picture-options='zoom'
 picture-uri='file://@REPO_DIR@/assets/img/gundam-lock.jpg'
+picture-uri-dark='file://@REPO_DIR@/assets/img/gundam-lock.jpg'
 
 [org/gnome/shell]
 enabled-extensions=['dash-to-dock@micxgx.gmail.com', 'logomenu@aryan_k', 'Resource_Monitor@Ory0n', 'just-perfection-desktop@just-perfection', 'user-theme@gnome-shell-extensions.gcampax.github.com']
@@ -33,6 +36,7 @@ enabled-extensions=['dash-to-dock@micxgx.gmail.com', 'logomenu@aryan_k', 'Resour
 [org/gnome/shell/extensions/dash-to-dock]
 autohide=true
 background-opacity=0.45
+click-action='minimize-or-previews'
 custom-background-color=false
 dash-max-icon-size=48
 dock-fixed=false
@@ -41,6 +45,7 @@ extend-height=false
 hide-in-overview=true
 intellihide=true
 isolate-workspaces=true
+show-running=true
 transparency-mode='FIXED'
 
 [org/gnome/shell/extensions/logo-menu]
