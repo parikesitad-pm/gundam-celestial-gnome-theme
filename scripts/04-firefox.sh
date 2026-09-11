@@ -151,29 +151,88 @@ GUNDAM_FIREFOX_CSS=$(cat <<'EOF'
     opacity: 0.6 !important;
 }
 
-/* 3. Active Tab Line & GN Particle Green Selection Accent (#2EC27E) */
-.tabbrowser-tab[selected="true"] .tab-background {
-    border-top: 2px solid #2EC27E !important;
+/* 3. Tab Bar, Active Tab & GN Particle Green Glow (#2EC27E) */
+:root {
+    --tab-min-height: 34px !important;
 }
+
+#navigator-toolbox,
+#TabsToolbar,
+#nav-bar {
+    background-color: #1E1E2E !important;
+    color: #ECEFF4 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.tabbrowser-tab {
+    padding-inline: 4px !important;
+}
+
+.tab-background {
+    border-radius: 6px !important;
+    margin-block: 2px !important;
+}
+
+/* Active Tab Accent & Border */
+.tabbrowser-tab[selected="true"] .tab-background {
+    background-color: #1A5FB4 !important;
+    border-top: 2px solid #2EC27E !important;
+    border-bottom: 2px solid #2EC27E !important;
+    box-shadow: 0 0 6px rgba(46, 194, 126, 0.4) !important;
+}
+
+.tabbrowser-tab[selected="true"] .tab-label {
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+}
+
 .tab-line[selected="true"],
 .tabbrowser-tab[selected="true"] .tab-line {
     background-color: #2EC27E !important;
     height: 2px !important;
 }
+
 .tabbrowser-tab:hover:not([selected="true"]) .tab-background {
     background-color: rgba(46, 194, 126, 0.08) !important;
 }
+
+/* URL Bar Base & Security/Focus Glow */
+#urlbar-background {
+    background-color: #181825 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+}
+
+#urlbar[focused="true"] > #urlbar-background {
+    border-color: #2EC27E !important;
+    box-shadow: 0 0 0 2px rgba(46, 194, 126, 0.35) !important;
+}
+
+#identity-box[pageproxystate="valid"].verifiedDomain #identity-icon,
+#identity-box[pageproxystate="valid"].chromeHTTPS #identity-icon {
+    fill: #2EC27E !important;
+}
+
+/* Tab Close & Attention Buttons */
+.tab-close-button {
+    border-radius: 9999px !important;
+    padding: 4px !important;
+    transition: background-color 0.2s ease, fill 0.2s ease !important;
+}
+
+.tab-close-button:hover {
+    background-color: #ED333B !important;
+    fill: #FFFFFF !important;
+}
+
+.tabbrowser-tab[attention="true"] .tab-label {
+    color: #F6D32D !important;
+}
+
 ::selection {
     background-color: rgba(46, 194, 126, 0.35) !important;
     color: #ffffff !important;
-}
-
-/* 4. Titlebar Surface Blending with Flat Dark GTK Surfaces */
-#navigator-toolbox,
-#TabsToolbar,
-#nav-bar {
-    background-color: rgba(18, 22, 28, 0.95) !important;
-    border: none !important;
 }
 EOF
 )
