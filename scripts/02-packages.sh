@@ -45,6 +45,7 @@ OFFICIAL_PKGS=(
     "zram-generator"
     "gnome-shell-extension-dash-to-dock"
     "gnome-shell-extensions"
+    "gnome-shell-extension-gnome-ui-tune"
     "ttf-jetbrains-mono"
     "curl"
     "unzip"

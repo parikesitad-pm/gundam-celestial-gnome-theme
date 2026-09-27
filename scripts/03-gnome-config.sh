@@ -406,8 +406,14 @@ GNOME_SHELL_CONFIG_DIR="${HOME}/.config/gnome-shell"
 mkdir -p "${GNOME_SHELL_CONFIG_DIR}"
 echo "${TOPBAR_CSS}" > "${GNOME_SHELL_CONFIG_DIR}/gnome-shell.css"
 
-# Disable native search bar via Just Perfection extension
+# Disable native search bar and ensure workspace thumbnails are always visible in Overview
 set_gsetting "org.gnome.shell.extensions.just-perfection" "search" "false"
+set_gsetting "org.gnome.shell.extensions.just-perfection" "workspace-switcher-should-show" "true"
+
+# Configure gnome-ui-tune for enhanced workspace overview
+set_gsetting "org.gnome.shell.extensions.gnome-ui-tune" "always-show-thumbnails" "true"
+set_gsetting "org.gnome.shell.extensions.gnome-ui-tune" "increase-thumbnails-size" "'200%'"
+set_gsetting "org.gnome.shell.extensions.gnome-ui-tune" "restore-thumbnails-background" "true"
 
 # Configure user-theme extension to activate Gundam-Celestial shell stylesheet
 set_gsetting "org.gnome.shell.extensions.user-theme" "name" "'Gundam-Celestial'"
@@ -458,6 +464,7 @@ CORE_EXTENSION_UUIDS=(
     "Resource_Monitor@Ory0n"
     "user-theme@gnome-shell-extensions.gcampax.github.com"
     "just-perfection-desktop@just-perfection"
+    "gnome-ui-tune@itstime.tech"
 )
 
 # Programmatically enable via gnome-extensions CLI

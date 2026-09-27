@@ -278,7 +278,7 @@ run_doctor() {
         ((issues++))
     fi
 
-    local core_exts=("dash-to-dock@micxgx.gmail.com" "logomenu@aryan_k" "Resource_Monitor@Ory0n")
+    local core_exts=("dash-to-dock@micxgx.gmail.com" "logomenu@aryan_k" "Resource_Monitor@Ory0n" "gnome-ui-tune@itstime.tech")
     local enabled_exts
     enabled_exts="$(gsettings get org.gnome.shell enabled-extensions 2>/dev/null || echo '[]')"
     for ext_uuid in "${core_exts[@]}"; do

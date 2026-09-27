@@ -31,7 +31,7 @@ picture-uri='file://@REPO_DIR@/assets/img/gundam-lock.jpg'
 picture-uri-dark='file://@REPO_DIR@/assets/img/gundam-lock.jpg'
 
 [org/gnome/shell]
-enabled-extensions=['dash-to-dock@micxgx.gmail.com', 'logomenu@aryan_k', 'Resource_Monitor@Ory0n', 'just-perfection-desktop@just-perfection', 'user-theme@gnome-shell-extensions.gcampax.github.com']
+enabled-extensions=['dash-to-dock@micxgx.gmail.com', 'logomenu@aryan_k', 'Resource_Monitor@Ory0n', 'just-perfection-desktop@just-perfection', 'user-theme@gnome-shell-extensions.gcampax.github.com', 'gnome-ui-tune@itstime.tech']
 
 [org/gnome/shell/extensions/dash-to-dock]
 autohide=true
@@ -75,6 +75,12 @@ thermalgputemperaturestatus=false
 
 [org/gnome/shell/extensions/just-perfection]
 search=false
+workspace-switcher-should-show=true
+
+[org/gnome/shell/extensions/gnome-ui-tune]
+always-show-thumbnails=true
+increase-thumbnails-size='200%'
+restore-thumbnails-background=true
 
 [org/gnome/shell/extensions/user-theme]
 name='Gundam-Celestial'
