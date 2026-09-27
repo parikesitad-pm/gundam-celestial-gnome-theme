@@ -28,9 +28,52 @@ export REPO_DIR
 LOG_FILE="/tmp/gundam-theme-install.log"
 SCRIPTS_DIR="${REPO_DIR}/scripts"
 
+detect_distro() {
+    if [[ -f /etc/os-release ]]; then
+        # shellcheck disable=SC1091
+        source /etc/os-release
+        DISTRO_ID="${ID:-unknown}"
+        DISTRO_LIKE="${ID_LIKE:-}"
+        DISTRO_NAME="${PRETTY_NAME:-Linux}"
+    else
+        DISTRO_ID="unknown"
+        DISTRO_LIKE=""
+        DISTRO_NAME="Unknown Linux"
+    fi
+
+    if [[ "${DISTRO_ID}" =~ ^(arch|manjaro|endeavouros|garuda|artix)$ ]] || [[ "${DISTRO_LIKE}" =~ arch ]]; then
+        DISTRO_FAMILY="arch"
+        PKG_MANAGER="pacman"
+    elif [[ "${DISTRO_ID}" =~ ^(fedora|rhel|centos|rocky|almalinux)$ ]] || [[ "${DISTRO_LIKE}" =~ (fedora|rhel) ]]; then
+        DISTRO_FAMILY="fedora"
+        PKG_MANAGER="dnf"
+    elif [[ "${DISTRO_ID}" =~ ^(ubuntu|debian|pop|mint|zorin|elementary)$ ]] || [[ "${DISTRO_LIKE}" =~ (debian|ubuntu) ]]; then
+        DISTRO_FAMILY="debian"
+        PKG_MANAGER="apt"
+    elif [[ "${DISTRO_ID}" =~ ^(opensuse|suse|sles)$ ]] || [[ "${DISTRO_LIKE}" =~ (suse|opensuse) ]]; then
+        DISTRO_FAMILY="suse"
+        PKG_MANAGER="zypper"
+    else
+        DISTRO_FAMILY="generic"
+        PKG_MANAGER="unknown"
+    fi
+    export DISTRO_FAMILY PKG_MANAGER DISTRO_NAME
+}
+
+verify_gnome_environment() {
+    if ! command -v gnome-shell >/dev/null 2>&1; then
+        echo -e "${RED}[ERROR] GNOME Shell was not detected on this system.${NC}" >&2
+        echo -e "${RED}[ERROR] Gundam Celestial is specifically tailored for GNOME desktop environments (Ubuntu, Fedora, Manjaro, Arch, etc.).${NC}" >&2
+        exit 1
+    fi
+}
+
 log_banner() {
-    echo -e "${CYAN}${BOLD}❖ GUNDAM CELESTIAL BEING | GNOME 50.4 (WAYLAND)${NC}"
-    echo -e "${BLUE}  Architect: parikesitad-pm | 8GB RAM ZRAM Optimized | Preset: gundam-00${NC}\n"
+    detect_distro
+    local gnome_ver
+    gnome_ver="$(gnome-shell --version 2>/dev/null | awk '{print $3}' || echo "Wayland")"
+    echo -e "${CYAN}${BOLD}❖ GUNDAM CELESTIAL BEING | GNOME ${gnome_ver} (${DISTRO_NAME})${NC}"
+    echo -e "${BLUE}  Architect: parikesitad-pm | Multi-Distro Universal Edition | Preset: gundam-00${NC}\n"
 }
 
 show_help() {
@@ -297,34 +340,36 @@ run_doctor() {
         log_warn "GTK4 Window Controls: Not found at ~/.config/gtk-4.0/gtk.css"
     fi
 
-    # 6. Firefox macOS & Gundam userChrome Deployment Status
-    echo -e "\n${BOLD}6. Firefox macOS & Gundam userChrome Status:${NC}"
-    local ff_dir="${HOME}/.mozilla/firefox"
-    local ff_verified=false
-    if [[ -d "${ff_dir}" ]]; then
-        local ff_profiles=()
-        while IFS= read -r -d '' p_dir; do
-            ff_profiles+=("${p_dir}")
-        done < <(find "${ff_dir}" -maxdepth 1 -mindepth 1 -type d \( -name "*.default*" -o -name "*release*" \) -print0 2>/dev/null)
+    # 6. Browser macOS & Gundam userChrome Deployment Status (Firefox & Zen Browser)
+    echo -e "\n${BOLD}6. Browser macOS & Gundam userChrome Status (Firefox & Zen):${NC}"
+    local b_roots=("${HOME}/.mozilla/firefox" "${HOME}/.zen" "${HOME}/.var/app/org.mozilla.firefox/.mozilla/firefox" "${HOME}/.var/app/app.zen_browser.zen/.zen")
+    local b_verified=false
+    for b_root in "${b_roots[@]}"; do
+        if [[ -d "${b_root}" ]]; then
+            local b_name="Firefox"
+            [[ "${b_root}" =~ (zen) ]] && b_name="Zen Browser"
+            local b_profiles=()
+            while IFS= read -r -d '' p_dir; do
+                b_profiles+=("${p_dir}")
+            done < <(find "${b_root}" -maxdepth 1 -mindepth 1 -type d \( -name "*.default*" -o -name "*release*" \) -print0 2>/dev/null)
 
-        for p in "${ff_profiles[@]}"; do
-            local uc="${p}/chrome/userChrome.css"
-            local cc="${p}/chrome/customChrome.css"
-            if [[ -f "${uc}" ]] && grep -Fq "Gundam Celestial Being" "${uc}" 2>/dev/null; then
-                log_ok "Firefox userChrome.css: Verified in $(basename "${p}")"
-                ff_verified=true
-            elif [[ -f "${cc}" ]] && grep -Fq "Gundam Celestial Being" "${cc}" 2>/dev/null; then
-                log_ok "Firefox customChrome.css: Verified in $(basename "${p}")"
-                ff_verified=true
-            fi
-        done
-        if [[ "${ff_verified}" == "true" ]]; then
-            log_ok "Firefox Gundam styling: Active & operational"
-        else
-            log_warn "Firefox userChrome styling not detected in default profiles."
+            for p in "${b_profiles[@]}"; do
+                local uc="${p}/chrome/userChrome.css"
+                local cc="${p}/chrome/customChrome.css"
+                if [[ -f "${uc}" ]] && grep -Fq "Gundam Celestial Being" "${uc}" 2>/dev/null; then
+                    log_ok "${b_name} userChrome.css: Verified in $(basename "${p}")"
+                    b_verified=true
+                elif [[ -f "${cc}" ]] && grep -Fq "Gundam Celestial Being" "${cc}" 2>/dev/null; then
+                    log_ok "${b_name} customChrome.css: Verified in $(basename "${p}")"
+                    b_verified=true
+                fi
+            done
         fi
+    done
+    if [[ "${b_verified}" == "true" ]]; then
+        log_ok "Browser Gundam styling: Active & operational"
     else
-        log_info "Firefox directory not present. Skipping browser audit."
+        log_warn "No browser userChrome styling detected in default profiles."
     fi
 
     # Diagnostic Summary
@@ -451,6 +496,8 @@ main() {
         log_err "Cannot verify OS environment."
         exit 1
     fi
+    detect_distro
+    verify_gnome_environment
 
     # Initialize log file
     echo "=== Gundam Celestial Installation Log - $(date) ===" > "${LOG_FILE}"
@@ -473,7 +520,7 @@ main() {
         run_step "Configuring High-Speed ZRAM Engine (zstd)" step_zram
 
         # Package resolution
-        run_step "Resolving Package Dependencies (Pacman & AUR)" step_packages
+        run_step "Resolving Package Dependencies (${DISTRO_NAME} & Themes)" step_packages
     fi
 
     # Step 3: Typography
@@ -488,8 +535,8 @@ main() {
     # Step 6: Extension auto-activation & hardening
     run_step "Auto-Activating & Hardening GNOME Extensions" step_extensions
 
-    # Step 7: Firefox styling
-    run_step "Deploying Firefox macOS & Gundam Celestial Styling" step_firefox
+    # Step 7: Browser styling (Firefox & Zen)
+    run_step "Deploying Browser macOS & Gundam Styling (Firefox & Zen)" step_firefox
 
     # Step 8: Preset finalization
     run_step "Applying Declarative Preset 'gundam-00'" step_preset

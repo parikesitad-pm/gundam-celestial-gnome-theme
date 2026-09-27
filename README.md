@@ -22,12 +22,14 @@ Inspired by **Mobile Suit Gundam 00: Celestial Being**, this profile blends macO
 | :-------------------------- | :------------------------------------------------------------------------------ | :----------------------------------------------------------------------- |
 | **Window Controls**         | Left-aligned macOS buttons (`close,minimize,maximize:`)                         | `org.gnome.desktop.wm.preferences button-layout`                         |
 | **Traffic Lights (GTK3/4)** | macOS red, yellow, and green circular window control buttons                    | WhiteSur GTK Dark theme + `~/.config/gtk-4.0/` & `gtk-3.0/` CSS          |
-| **Firefox Browser Theme**   | Left-aligned macOS rounded buttons with Gundam colorway & GN green active tab   | `userChrome.css` + `user.js` in `~/.mozilla/firefox/*.default*`          |
+| **Browser Theming**         | Left-aligned macOS buttons with Gundam palette & GN green active tab           | `userChrome.css` + `user.js` in Firefox & Zen Browser                    |
+| **Workspace Overview**      | Compact macOS-style rounded thumbnails (14px radius) + GN green indicator      | `gnome-ui-tune` + `gnome-shell.css` + Just Perfection                    |
+| **Multi-Distro Engine**     | Universal auto-detection for Arch Linux, Manjaro, Fedora, Ubuntu/Debian, openSUSE | `install.sh` + `scripts/02-packages.sh` (`pacman`, `dnf`, `apt`, `zypper`)|
 | **Typography**              | JetBrains Mono (Interface, Monospace, Documents at 10pt)                        | `org.gnome.desktop.interface font-name 'JetBrains Mono 10'`              |
 | **Cursor Theme**            | MacOS Tahoe (locked to compact 24px)                                            | `org.gnome.desktop.interface cursor-theme 'MacOS-Tahoe'`                 |
 | **Spotlight Shortcut**      | Ulauncher application launcher mapped to `Ctrl + Space`                         | `~/.config/ulauncher/settings.json` + GNOME custom keybinding            |
 | **Color Scheme**            | Prefer Dark                                                                     | `org.gnome.desktop.interface color-scheme 'prefer-dark'`                 |
-| **GTK Application Theme**   | WhiteSur-Dark (macOS aesthetics)                                                | `org.gnome.desktop.interface gtk-theme 'WhiteSur-Dark'`                  |
+| **GTK Application Theme**   | WhiteSur-Dark (macOS aesthetics with automated upstream fallback)              | `org.gnome.desktop.interface gtk-theme 'WhiteSur-Dark'`                  |
 | **Dynamic Wallpaper**       | Gundam Celestial Being Dark & Light wallpapers (644 permissions)                | Native `org.gnome.desktop.background picture-uri-dark` & `picture-uri`   |
 | **Lockscreen**              | Gundam Celestial Being Lockscreen (`zoom` mode, 644 permissions)                | `org.gnome.desktop.screensaver picture-uri` & `picture-uri-dark`         |
 | **Icon Theme**              | `Nordzy-dark` (Pure SVG vector, 0MB RAM footprint)                              | `org.gnome.desktop.interface icon-theme 'Nordzy-dark'`                   |
@@ -127,8 +129,8 @@ Firefox is themed to harmonize with the desktop's macOS window geometry and Gund
    - **Active Tab Line & Selection**: GN Particle Green (`#2EC27E`)
 3. **Flat Dark Titlebar Integration**:
    - Tab bar and toolbox surfaces seamlessly blend into flat dark GTK surfaces (`rgba(18, 22, 28, 0.95)`).
-4. **Automated User Profile Targeting**:
-   - Deployed via `scripts/04-firefox.sh` across all active default profiles (`~/.mozilla/firefox/*.default*`).
+4. **Automated User Profile Targeting (Firefox & Zen Browser)**:
+   - Deployed via `scripts/04-firefox.sh` across all active default profiles (`~/.mozilla/firefox/*.default*` and `~/.zen/*.default*`).
    - Automatically enables legacy stylesheet loading in `user.js`:
      ```javascript
      user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
@@ -163,6 +165,10 @@ The GNOME Shell Activities Overview (triggered via the `Super` key) is optimized
    - App launching and searching is delegated to **Ulauncher** (macOS Spotlight style, mapped to `Ctrl + Space`), keeping the GNOME overview solely dedicated to clean window management.
 3. **Native Window Spread**:
    - Preserves GNOME's native window clustering without installing heavy tiling or window-grouping daemons.
+4. **macOS-Style Workspace Thumbnails**:
+   - Workspaces thumbnail strip is permanently displayed across the top via `gnome-ui-tune` (`always-show-thumbnails = true`) and Just Perfection.
+   - Styled with compact 100% scaling, 14px rounded corners (`border-radius`), dynamic wallpaper restoration, and a 17px rounded GN Particle Green (`#2EC27E`) active workspace border indicator.
+   - Enables intuitive drag-and-drop window migration between workspaces identical to macOS Spaces / Mission Control.
 
 ---
 

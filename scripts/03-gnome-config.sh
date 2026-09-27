@@ -393,6 +393,25 @@ TOPBAR_CSS=$(cat <<'EOF'
     border: none !important;
     opacity: 0 !important;
 }
+
+/* macOS-Style Rounded Workspace Thumbnails & GN Green Active Indicator */
+.workspace-thumbnails {
+    spacing: 12px !important;
+    padding: 8px 12px !important;
+}
+
+.workspace-thumbnails .workspace-thumbnail,
+.workspace-thumbnail {
+    border-radius: 14px !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+}
+
+.workspace-thumbnail-indicator {
+    border: 2.5px solid #2EC27E !important;
+    border-radius: 17px !important;
+    padding: 0px !important;
+}
 EOF
 )
 
@@ -410,9 +429,9 @@ echo "${TOPBAR_CSS}" > "${GNOME_SHELL_CONFIG_DIR}/gnome-shell.css"
 set_gsetting "org.gnome.shell.extensions.just-perfection" "search" "false"
 set_gsetting "org.gnome.shell.extensions.just-perfection" "workspace-switcher-should-show" "true"
 
-# Configure gnome-ui-tune for enhanced workspace overview
+# Configure gnome-ui-tune for enhanced workspace overview (compact 100% scale + rounded thumbnails)
 set_gsetting "org.gnome.shell.extensions.gnome-ui-tune" "always-show-thumbnails" "true"
-set_gsetting "org.gnome.shell.extensions.gnome-ui-tune" "increase-thumbnails-size" "'200%'"
+set_gsetting "org.gnome.shell.extensions.gnome-ui-tune" "increase-thumbnails-size" "'100%'"
 set_gsetting "org.gnome.shell.extensions.gnome-ui-tune" "restore-thumbnails-background" "true"
 
 # Configure user-theme extension to activate Gundam-Celestial shell stylesheet

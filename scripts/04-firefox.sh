@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # Project:     gundam-celestial-gnome-theme
-# Module:      04 - Firefox macOS & Gundam Celestial Styling (scripts/04-firefox.sh)
+# Module:      04 - Firefox & Zen Browser macOS & Gundam Styling (scripts/04-firefox.sh)
 # Target:      Manjaro 26.1.2 (Bian-May) | GNOME Shell 50.4 (Wayland)
 # Author:      parikesitad-pm
 # License:     MIT License (c) 2026
-# Description: Configures Firefox with macOS window controls, Gundam colorways,
+# Description: Configures Firefox & Zen Browser with macOS window controls, Gundam colorways,
 #              GN particle green tab highlights, and user.js stylesheets
 # ==============================================================================
 
@@ -19,32 +19,34 @@ YELLOW='\033[0;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-log_info() { echo -e "${CYAN}[FIREFOX INFO]${NC} $*"; }
-log_ok()   { echo -e "${GREEN}[FIREFOX OK]${NC} $*"; }
-log_warn() { echo -e "${YELLOW}[FIREFOX WARN]${NC} $*"; }
-log_err()  { echo -e "${RED}[FIREFOX ERROR]${NC} $*" >&2; }
+log_info() { echo -e "${CYAN}[BROWSER INFO]${NC} $*"; }
+log_ok()   { echo -e "${GREEN}[BROWSER OK]${NC} $*"; }
+log_warn() { echo -e "${YELLOW}[BROWSER WARN]${NC} $*"; }
+log_err()  { echo -e "${RED}[BROWSER ERROR]${NC} $*" >&2; }
 
-echo -e "${BOLD}${CYAN}==> [04/04] Deploying Firefox macOS & Gundam Celestial Styling${NC}"
-
-FIREFOX_DIR="${HOME}/.mozilla/firefox"
-
-if [[ ! -d "${FIREFOX_DIR}" ]]; then
-    log_warn "Firefox directory not found at ${FIREFOX_DIR}. Skipping Firefox styling."
-    exit 0
-fi
+echo -e "${BOLD}${CYAN}==> [04/04] Deploying Firefox & Zen Browser macOS & Gundam Styling${NC}"
 
 # ------------------------------------------------------------------------------
-# 1. Profile Discovery
+# 1. Profile Discovery (Firefox & Zen Browser)
 # ------------------------------------------------------------------------------
+BROWSER_ROOTS=(
+    "${HOME}/.mozilla/firefox"
+    "${HOME}/.zen"
+    "${HOME}/.var/app/org.mozilla.firefox/.mozilla/firefox"
+    "${HOME}/.var/app/app.zen_browser.zen/.zen"
+)
+
 PROFILES=()
-
-# Discover profiles matching *.default* or release
-while IFS= read -r -d '' p_dir; do
-    PROFILES+=("${p_dir}")
-done < <(find "${FIREFOX_DIR}" -maxdepth 1 -mindepth 1 -type d \( -name "*.default*" -o -name "*release*" \) -print0 2>/dev/null)
+for b_root in "${BROWSER_ROOTS[@]}"; do
+    if [[ -d "${b_root}" ]]; then
+        while IFS= read -r -d '' p_dir; do
+            PROFILES+=("${p_dir}")
+        done < <(find "${b_root}" -maxdepth 1 -mindepth 1 -type d \( -name "*.default*" -o -name "*release*" \) -print0 2>/dev/null)
+    fi
+done
 
 if [[ ${#PROFILES[@]} -eq 0 ]]; then
-    log_warn "No active Firefox default profiles located under ${FIREFOX_DIR}."
+    log_warn "No active Firefox or Zen Browser default profiles located."
     exit 0
 fi
 
@@ -241,7 +243,7 @@ EOF
 # 3. Deploy to Profiles
 # ------------------------------------------------------------------------------
 for profile in "${PROFILES[@]}"; do
-    log_info "Configuring Firefox profile: $(basename "${profile}")"
+    log_info "Configuring browser profile: $(basename "${profile}")"
 
     # 1. Enable custom stylesheet loading in user.js
     USER_JS="${profile}/user.js"
@@ -288,4 +290,4 @@ EOF
     log_ok "Gundam Celestial styling deployed to ${TARGET_CSS}."
 done
 
-log_ok "Firefox macOS & Gundam Celestial styling successfully configured."
+log_ok "Browser (Firefox & Zen) macOS & Gundam Celestial styling successfully configured."

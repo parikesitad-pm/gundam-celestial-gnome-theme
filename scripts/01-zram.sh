@@ -36,17 +36,36 @@ if ! command -v sudo >/dev/null 2>&1; then
 fi
 
 # 1. Verify zram-generator package is installed
-if ! pacman -Q zram-generator >/dev/null 2>&1; then
-    if can_elevate; then
-        log_info "Installing zram-generator via pacman..."
-        sudo pacman -S --noconfirm --needed zram-generator
-        log_ok "zram-generator installed successfully."
-    else
-        log_warn "zram-generator is missing but cannot elevate non-interactively. Please install via: sudo pacman -S zram-generator"
+install_zram_package() {
+    if command -v pacman >/dev/null 2>&1; then
+        if ! pacman -Q zram-generator >/dev/null 2>&1; then
+            if can_elevate; then
+                sudo pacman -S --noconfirm --needed zram-generator
+            fi
+        fi
+    elif command -v dnf >/dev/null 2>&1; then
+        if ! rpm -q zram-generator >/dev/null 2>&1; then
+            if can_elevate; then
+                sudo dnf install -y zram-generator
+            fi
+        fi
+    elif command -v apt-get >/dev/null 2>&1; then
+        if ! dpkg -l systemd-zram-generator >/dev/null 2>&1 && ! dpkg -l zram-tools >/dev/null 2>&1; then
+            if can_elevate; then
+                sudo apt-get update && sudo apt-get install -y systemd-zram-generator 2>/dev/null || sudo apt-get install -y zram-tools 2>/dev/null || true
+            fi
+        fi
+    elif command -v zypper >/dev/null 2>&1; then
+        if ! rpm -q systemd-zram-generator >/dev/null 2>&1; then
+            if can_elevate; then
+                sudo zypper install -y systemd-zram-generator 2>/dev/null || true
+            fi
+        fi
     fi
-else
-    log_ok "zram-generator is already installed."
-fi
+}
+
+install_zram_package
+log_ok "ZRAM engine package check verified."
 
 # 2. Configure /etc/systemd/zram-generator.conf
 ZRAM_CONF_FILE="/etc/systemd/zram-generator.conf"

@@ -5,23 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-09-27
+
+### Added
+- Universal multi-distro architecture in `install.sh` and `scripts/02-packages.sh` supporting Arch Linux, Manjaro, Fedora, Debian/Ubuntu, and openSUSE GNOME workstations.
+- Automated package detection and installation for `zsh`, `firefox`, and system libraries across `pacman`, `dnf`, `apt`, and `zypper`.
+- Out-of-the-box Zen Browser deployment engine with automated AUR, Flatpak, and universal binary archive extraction (`zen.linux-x86_64.tar.xz`).
+- Extended Gundam Celestial macOS window controls and GN particle styling to both Firefox and Zen Browser user profiles (`~/.mozilla/firefox` and `~/.zen`).
+- Upstream WhiteSur GTK theme fallback with automated git cloning and installation when distro packages are unavailable.
+
+### Changed
+- Scaled Overview workspace thumbnail preview strip to compact 100% scale for proportional desktop layout.
+- Added macOS-style rounded corners (`border-radius: 14px`) to workspace thumbnails and 17px rounded GN green active workspace indicator in GNOME Shell theme.
+
 ## [1.4.0] - 2026-09-27
 
 ### Added
+
 - Integrated native Manjaro `gnome-ui-tune` extension and enabled persistent workspace thumbnail strip in GNOME Overview for seamless macOS Mission Control drag-and-drop workspace window management.
 - Configured 2x workspace thumbnail scaling with native wallpaper background restoration in Overview mode.
 
 ## [1.3.0] - 2026-09-11
 
 ### Added
+
 - Gundam-themed macOS window controls and GN particle green tab highlights for Firefox via automated `userChrome.css` and `user.js` profile deployment.
 
 ### Fixed
+
 - Lockscreen wallpaper path resolution with persistent user background storage (`~/.local/share/backgrounds/`) and explicit `644` file permissions.
 - Instant user session logout via `loginctl terminate-user` replacing hanging subshell calls.
 - Dash to Dock window click-to-minimize behavior (`minimize-or-previews`) and active running indicators (`show-running`).
 
 ### Changed
+
 - Localized all terminal prompts, CLI messages, and scripts entirely to English.
 - Standardized project author metadata and attribution strictly to `parikesitad-pm`.
 

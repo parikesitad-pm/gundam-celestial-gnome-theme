@@ -79,7 +79,7 @@ workspace-switcher-should-show=true
 
 [org/gnome/shell/extensions/gnome-ui-tune]
 always-show-thumbnails=true
-increase-thumbnails-size='200%'
+increase-thumbnails-size='100%'
 restore-thumbnails-background=true
 
 [org/gnome/shell/extensions/user-theme]
